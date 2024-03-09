@@ -34,7 +34,7 @@ fun BlueprintItem(
     modifier: Modifier,
     label: String,
     parentConnectionConfig: ParentConnectionConfig = WherePossible,
-    geometryUpdated: (BlueprintItemData) -> Unit,
+    itemUpdated: (BlueprintItemData) -> Unit,
 ) {
 
     var itemSize by remember {
@@ -55,8 +55,11 @@ fun BlueprintItem(
                 ),
             )
             .onGloballyPositioned { layoutCoordinates ->
+
                 itemSize = layoutCoordinates.size
-                geometryUpdated(
+
+                /* tell the parent about our latest position and size */
+                itemUpdated(
                     BlueprintItemData(
                         label = label,
                         position = Offset(

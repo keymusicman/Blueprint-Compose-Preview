@@ -82,7 +82,7 @@ fun ExampleBlueprintPreview() {
                         .width(80.dp)
                         .height(80.dp),
                     label = "Hero",
-                    geometryUpdated = geometryUpdated,
+                    itemUpdated = geometryUpdated,
                 )
             },
             header = {
@@ -91,7 +91,7 @@ fun ExampleBlueprintPreview() {
                         .width(144.dp)
                         .height(48.dp),
                     label = "Header",
-                    geometryUpdated = geometryUpdated,
+                    itemUpdated = geometryUpdated,
                 )
             },
             body = {
@@ -103,7 +103,7 @@ fun ExampleBlueprintPreview() {
                     parentConnectionConfig = Specific(
                         top = None,
                     ),
-                    geometryUpdated = geometryUpdated,
+                    itemUpdated = geometryUpdated,
                 )
             },
             footer = {
@@ -112,7 +112,7 @@ fun ExampleBlueprintPreview() {
                         .fillMaxWidth()
                         .height(50.dp),
                     label = "Footer",
-                    geometryUpdated = geometryUpdated,
+                    itemUpdated = geometryUpdated,
                 )
             }
         )
