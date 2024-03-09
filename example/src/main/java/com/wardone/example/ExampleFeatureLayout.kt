@@ -19,7 +19,7 @@ import com.wardone.bluprint.items.Specific
 import com.wardone.bluprint.preview.BlueprintPreview
 
 @Composable
-fun ExampleLayout(
+fun ExampleFeatureLayout(
     hero: @Composable () -> Unit,
     header: @Composable () -> Unit,
     body: @Composable () -> Unit,
@@ -74,15 +74,15 @@ fun ExampleLayout(
 @Preview
 @Composable
 fun ExampleBlueprintPreview() {
-    BlueprintPreview { geometryUpdated ->
-        ExampleLayout(
+    BlueprintPreview { itemUpdated ->
+        ExampleFeatureLayout(
             hero = {
                 BlueprintItem(
                     modifier = Modifier
                         .width(80.dp)
                         .height(80.dp),
                     label = "Hero",
-                    itemUpdated = geometryUpdated,
+                    itemUpdated = itemUpdated,
                 )
             },
             header = {
@@ -91,7 +91,7 @@ fun ExampleBlueprintPreview() {
                         .width(144.dp)
                         .height(48.dp),
                     label = "Header",
-                    itemUpdated = geometryUpdated,
+                    itemUpdated = itemUpdated,
                 )
             },
             body = {
@@ -103,7 +103,7 @@ fun ExampleBlueprintPreview() {
                     parentConnectionConfig = Specific(
                         top = None,
                     ),
-                    itemUpdated = geometryUpdated,
+                    itemUpdated = itemUpdated,
                 )
             },
             footer = {
@@ -112,7 +112,7 @@ fun ExampleBlueprintPreview() {
                         .fillMaxWidth()
                         .height(50.dp),
                     label = "Footer",
-                    itemUpdated = geometryUpdated,
+                    itemUpdated = itemUpdated,
                 )
             }
         )

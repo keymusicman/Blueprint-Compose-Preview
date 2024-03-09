@@ -56,9 +56,7 @@ fun BlueprintItem(
                 color = Color.White,
             )
             .background(
-                color = MaterialTheme.colorScheme.background.copy(
-                    alpha = 0.7f
-                ),
+                color = MaterialTheme.colorScheme.background,
             )
             .onGloballyPositioned { layoutCoordinates ->
 
