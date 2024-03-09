@@ -1,4 +1,4 @@
-package com.wardone.bluprint.preview
+package com.wardone.bluprint.grid
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -25,8 +25,8 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Dp
 import com.wardone.bluprint.constants.Direction
 import com.wardone.bluprint.items.BlueprintItemData
-import com.wardone.bluprint.preview.utils.createArrowPath
-import com.wardone.bluprint.preview.utils.drawBlueprintLineLabel
+import com.wardone.bluprint.grid.utils.createArrowPath
+import com.wardone.bluprint.grid.utils.drawBlueprintLineLabel
 
 @Composable
 fun BlueprintGrid(

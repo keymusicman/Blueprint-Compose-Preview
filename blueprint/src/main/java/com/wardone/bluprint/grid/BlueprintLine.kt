@@ -1,4 +1,4 @@
-package com.wardone.bluprint.preview
+package com.wardone.bluprint.grid
 
 import androidx.compose.ui.geometry.Offset
 import kotlin.math.pow

@@ -1,4 +1,4 @@
-package com.wardone.bluprint.preview.utils
+package com.wardone.bluprint.grid.utils
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -10,7 +10,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
-import com.wardone.bluprint.preview.BlueprintLine
+import com.wardone.bluprint.grid.BlueprintLine
 import java.text.DecimalFormat
 
 fun DrawScope.drawBlueprintLineLabel(

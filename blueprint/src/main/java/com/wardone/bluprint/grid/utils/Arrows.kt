@@ -1,4 +1,4 @@
-package com.wardone.bluprint.preview.utils
+package com.wardone.bluprint.grid.utils
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Path
