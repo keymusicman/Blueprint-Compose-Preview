@@ -31,12 +31,6 @@ fun BlueprintPreview(
                  * state to refresh the blueprint grid, who will use the data to draw measured
                  * lines, labels etc.
                  */
-                /**
-                 * as blueprint items get laid out in the preview, they will keep us updated
-                 * here with their most recent position, size etc. then we just update our
-                 * state to refresh the blueprint grid, who will use the data to draw measured
-                 * lines, labels etc.
-                 */
                 blueprintItemDataState = blueprintItemDataState
                     .toMutableMap()
                     .apply {

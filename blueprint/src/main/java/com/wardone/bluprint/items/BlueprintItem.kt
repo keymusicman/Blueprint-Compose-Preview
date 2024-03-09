@@ -24,10 +24,12 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import java.text.DecimalFormat
 
 @Composable
 fun BlueprintItem(
@@ -36,6 +38,10 @@ fun BlueprintItem(
     parentConnectionConfig: ParentConnectionConfig = WherePossible,
     itemUpdated: (BlueprintItemData) -> Unit,
 ) {
+
+    val decimalFormat = remember {
+        DecimalFormat("0.##")
+    }
 
     var itemSize by remember {
         mutableStateOf(
@@ -136,7 +142,11 @@ fun BlueprintItem(
                     ),
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Medium,
-                text = "${itemSize.width}x${itemSize.height}",
+                text = LocalDensity.current.run {
+                    val width = decimalFormat.format(itemSize.width.toDp().value)
+                    val height = decimalFormat.format(itemSize.height.toDp().value)
+                    "${width}x${height}"
+                },
             )
         }
     }
