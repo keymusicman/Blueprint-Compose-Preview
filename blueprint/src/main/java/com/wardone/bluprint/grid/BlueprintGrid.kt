@@ -402,7 +402,7 @@ fun BlueprintGrid(
                     )
 
                     val downArrowPath = createArrowPath(
-                        direction = Direction.Top,
+                        direction = Direction.Bottom,
                         tip = blueprintLine.end
                     )
 
