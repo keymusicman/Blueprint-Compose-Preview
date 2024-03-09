@@ -11,11 +11,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
-import com.wardone.bluprint.items.BlueprintItemInfo
+import com.wardone.bluprint.items.BlueprintItemData
 
 @Composable
 fun BlueprintPreview(
-    content: @Composable (geometryUpdated: (BlueprintItemInfo) -> Unit) -> Unit
+    content: @Composable (geometryUpdated: (BlueprintItemData) -> Unit) -> Unit
 ) {
     MaterialTheme(
         colorScheme = lightColorScheme(
@@ -25,7 +25,7 @@ fun BlueprintPreview(
         content = {
 
             var blueprintItemGeometries by remember {
-                mutableStateOf<Map<String, BlueprintItemInfo>>(mutableMapOf())
+                mutableStateOf<Map<String, BlueprintItemData>>(mutableMapOf())
             }
 
             BlueprintGrid(

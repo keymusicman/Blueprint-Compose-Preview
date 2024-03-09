@@ -19,9 +19,9 @@ import com.wardone.bluprint.items.Specific
 import com.wardone.bluprint.preview.BlueprintPreview
 
 @Composable
-fun ExampleBlueprintLayout(
+fun ExampleLayout(
+    hero: @Composable () -> Unit,
     header: @Composable () -> Unit,
-    otherHeader: @Composable () -> Unit,
     body: @Composable () -> Unit,
     footer: @Composable () -> Unit,
 ) {
@@ -44,7 +44,7 @@ fun ExampleBlueprintLayout(
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
 
-                otherHeader()
+                hero()
                 header()
             }
         }
@@ -75,22 +75,22 @@ fun ExampleBlueprintLayout(
 @Composable
 fun ExampleBlueprintPreview() {
     BlueprintPreview { geometryUpdated ->
-        ExampleBlueprintLayout(
+        ExampleLayout(
+            hero = {
+                BlueprintItem(
+                    modifier = Modifier
+                        .width(80.dp)
+                        .height(80.dp),
+                    label = "Hero",
+                    geometryUpdated = geometryUpdated,
+                )
+            },
             header = {
                 BlueprintItem(
                     modifier = Modifier
                         .width(144.dp)
                         .height(48.dp),
                     label = "Header",
-                    geometryUpdated = geometryUpdated,
-                )
-            },
-            otherHeader = {
-                BlueprintItem(
-                    modifier = Modifier
-                        .width(80.dp)
-                        .height(80.dp),
-                    label = "Hero",
                     geometryUpdated = geometryUpdated,
                 )
             },

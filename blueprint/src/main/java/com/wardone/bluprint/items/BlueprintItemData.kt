@@ -3,14 +3,14 @@ package com.wardone.bluprint.items
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 
-data class BlueprintItemInfo(
+data class BlueprintItemData(
     val label: String,
     val position: Offset,
     val size: Size,
     val parentConnectionConfig: ParentConnectionConfig,
 ) {
 
-    infix fun canSeeBelow(other: BlueprintItemInfo): Boolean {
+    infix fun isDirectlyAbove(other: BlueprintItemData): Boolean {
 
         val bottom = position.y + size.height
         val centerBottom = position.x + size.width / 2
@@ -22,11 +22,11 @@ data class BlueprintItemInfo(
         return otherIsBelow && otherInLineOfSight
     }
 
-    infix fun canSeeRight(other: BlueprintItemInfo): Boolean {
+    infix fun isDirectlyLeftOf(other: BlueprintItemData): Boolean {
 
         val right = position.x + size.width
         val centerVertical = position.y + size.height / 2
-        val otherBottom = other.position.x + other.size.width
+        val otherBottom = other.position.y + other.size.height
 
         val otherIsToTheRight = other.position.x > right
         val otherInLineOfSight = centerVertical >= other.position.y && centerVertical <= otherBottom
@@ -34,11 +34,11 @@ data class BlueprintItemInfo(
         return otherIsToTheRight && otherInLineOfSight
     }
 
-    infix fun canSeeLeft(other: BlueprintItemInfo): Boolean {
+    infix fun isDirectlyRightOf(other: BlueprintItemData): Boolean {
 
         val otherRight = other.position.x + other.size.width
         val centerVertical = position.y + (size.height / 2)
-        val otherBottom = other.position.x + other.size.width
+        val otherBottom = other.position.y + other.size.height
 
         val otherIsToTheLeft = otherRight < position.x
         val otherInLineOfSight = centerVertical >= other.position.y && centerVertical <= otherBottom
@@ -46,7 +46,7 @@ data class BlueprintItemInfo(
         return otherIsToTheLeft && otherInLineOfSight
     }
 
-    infix fun canSeeAbove(other: BlueprintItemInfo): Boolean {
+    infix fun isDirectlyBelow(other: BlueprintItemData): Boolean {
 
         val otherBottom = other.position.y + other.size.height
         val centerBottom = position.x + (size.width / 2)
