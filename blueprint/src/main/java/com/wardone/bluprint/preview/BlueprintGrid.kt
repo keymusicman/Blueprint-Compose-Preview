@@ -31,7 +31,7 @@ import com.wardone.bluprint.preview.utils.drawBlueprintLineLabel
 @Composable
 fun BlueprintGrid(
     gridSize: Dp,
-    itemGeometries: Map<String, BlueprintItemData>,
+    blueprintItems: Map<String, BlueprintItemData>,
     content: @Composable () -> Unit
 ) {
 
@@ -95,12 +95,12 @@ fun BlueprintGrid(
             modifier = Modifier,
         ) {
 
-            itemGeometries.forEach { currentEntry ->
+            blueprintItems.forEach { currentEntry ->
 
                 val completedBlueprintLines = mutableListOf<BlueprintLine>()
 
                 /* draw VERTICAL connecting lines where there is direct line of sight */
-                itemGeometries.values.filter { other ->
+                blueprintItems.values.filter { other ->
                     currentEntry.value != other && currentEntry.value isDirectlyAbove other
                 }.forEach lineOfSightEntries@ { other ->
 
@@ -163,7 +163,7 @@ fun BlueprintGrid(
                 }
 
                 /* draw horizontal connecting lines where there is direct line of sight */
-                itemGeometries.values.filter { other ->
+                blueprintItems.values.filter { other ->
                     currentEntry.value != other && currentEntry.value isDirectlyLeftOf other
                 }.forEach lineOfSightEntries@ { other ->
 
@@ -220,7 +220,7 @@ fun BlueprintGrid(
 
                 /* draw direct lines of sight to parent */
 
-                val parentDirectLeft = itemGeometries.values.none { other ->
+                val parentDirectLeft = blueprintItems.values.none { other ->
                     currentEntry.value isDirectlyRightOf other
                 } && currentEntry.value.parentConnectionConfig
                     .shouldConnectParent(Direction.Left)
@@ -273,7 +273,7 @@ fun BlueprintGrid(
                     drawBlueprintLineLabel(textMeasurer, blueprintLine, backgroundColor)
                 }
 
-                val parentDirectTop = itemGeometries.values.none { other ->
+                val parentDirectTop = blueprintItems.values.none { other ->
                     currentEntry.value isDirectlyBelow other
                 } && currentEntry.value.parentConnectionConfig
                     .shouldConnectParent(Direction.Top)
@@ -320,7 +320,7 @@ fun BlueprintGrid(
                     drawBlueprintLineLabel(textMeasurer, blueprintLine, backgroundColor)
                 }
 
-                val parentDirectRight = itemGeometries.values.none { other ->
+                val parentDirectRight = blueprintItems.values.none { other ->
                     currentEntry.value isDirectlyLeftOf other
                 } && currentEntry.value.parentConnectionConfig
                     .shouldConnectParent(Direction.Right)
@@ -367,7 +367,7 @@ fun BlueprintGrid(
                     drawBlueprintLineLabel(textMeasurer, blueprintLine, backgroundColor)
                 }
 
-                val parentDirectBottom = itemGeometries.values.none { other ->
+                val parentDirectBottom = blueprintItems.values.none { other ->
                     currentEntry.value isDirectlyAbove other
                 } && currentEntry.value.parentConnectionConfig
                     .shouldConnectParent(Direction.Bottom)
