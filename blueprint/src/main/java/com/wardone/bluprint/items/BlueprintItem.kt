@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
@@ -30,9 +31,13 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import java.text.DecimalFormat
+import java.util.UUID
 
 @Composable
 fun BlueprintItem(
+    id: String = remember {
+        UUID.randomUUID().toString()
+    },
     modifier: Modifier,
     label: String,
     parentConnectionConfig: ParentConnectionConfig = WherePossible,
@@ -40,7 +45,7 @@ fun BlueprintItem(
 ) {
 
     val decimalFormat = remember {
-        DecimalFormat("0.##")
+        DecimalFormat("0")
     }
 
     var itemSize by remember {
@@ -65,6 +70,7 @@ fun BlueprintItem(
                 /* tell the parent about our latest position and size */
                 itemUpdated(
                     BlueprintItemData(
+                        id = id,
                         label = label,
                         position = Offset(
                             x = layoutCoordinates.boundsInRoot().left,
@@ -111,41 +117,53 @@ fun BlueprintItem(
                 } while (start < size.width + size.height)
             }
         }
-        Column(
-            modifier = Modifier
-                .background(MaterialTheme.colorScheme.background)
-                .border(1.dp, Color.White.copy(alpha = 0.7f)),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Text(
+        if (itemSize.width > (itemSize.height * 2)) {
+            Row(
                 modifier = Modifier
-                    .padding(
-                        start = 6.dp,
-                        top = 6.dp,
-                        end = 6.dp,
-                        bottom = 1.dp
-                    ),
-                fontWeight = FontWeight.Medium,
-                fontSize = 12.sp,
+                    .background(MaterialTheme.colorScheme.background)
+                    .border(1.dp, Color.White.copy(alpha = 0.7f))
+                    .padding(2.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 12.sp,
+                    text = label,
+                )
+                Text(
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium,
+                    text = LocalDensity.current.run {
+                        val width = decimalFormat.format(itemSize.width.toDp().value)
+                        val height = decimalFormat.format(itemSize.height.toDp().value)
+                        "${width}x${height}"
+                    },
+                )
+            }
+        } else {
+            Column(
+                modifier = Modifier
+                    .background(MaterialTheme.colorScheme.background)
+                    .border(1.dp, Color.White.copy(alpha = 0.7f))
+                    .padding(2.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text(
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 12.sp,
 
-                text = label,
-            )
-            Text(
-                modifier = Modifier
-                    .padding(
-                        start = 6.dp,
-                        top = 1.dp,
-                        end = 6.dp,
-                        bottom = 6.dp
-                    ),
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Medium,
-                text = LocalDensity.current.run {
-                    val width = decimalFormat.format(itemSize.width.toDp().value)
-                    val height = decimalFormat.format(itemSize.height.toDp().value)
-                    "${width}x${height}"
-                },
-            )
+                    text = label,
+                )
+                Text(
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium,
+                    text = LocalDensity.current.run {
+                        val width = decimalFormat.format(itemSize.width.toDp().value)
+                        val height = decimalFormat.format(itemSize.height.toDp().value)
+                        "${width}x${height}"
+                    },
+                )
+            }
         }
     }
 }

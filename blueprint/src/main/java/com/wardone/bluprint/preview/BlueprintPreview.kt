@@ -34,7 +34,7 @@ fun BlueprintPreview(
                 blueprintItemDataState = blueprintItemDataState
                     .toMutableMap()
                     .apply {
-                        put(blueprintItemData.label, blueprintItemData)
+                        put(blueprintItemData.id, blueprintItemData)
                     }
             }
         }

@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
 import com.wardone.bluprint.grid.BlueprintLine
 import java.text.DecimalFormat
+import kotlin.math.min
 
 fun DrawScope.drawBlueprintLineLabel(
     textMeasurer: TextMeasurer,
@@ -23,11 +24,10 @@ fun DrawScope.drawBlueprintLineLabel(
 
     val measuredText = textMeasurer.measure(
         text = AnnotatedString(
-            text = format.format(blueprintLine.length().toDp().value),
+            text = format.format(blueprintLine.length.toDp().value),
             spanStyle = SpanStyle(
-                fontSize = 12.sp,
-
-                )
+                fontSize = min((blueprintLine.length * 0.15f), 12f).sp
+            )
         ),
         style = TextStyle(Color.White),
     )

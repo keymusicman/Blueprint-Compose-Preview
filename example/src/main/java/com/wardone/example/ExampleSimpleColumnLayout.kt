@@ -31,7 +31,7 @@ fun ExampleSimpleColumn(
 
 @Preview
 @Composable
-fun ExampleSimpleColumnPreview() {
+fun ExampleSimpleColumnBlueprintPreview() {
     BlueprintPreview { itemUpdated ->
         ExampleSimpleColumn(
             listOf(
@@ -50,6 +50,33 @@ fun ExampleSimpleColumnPreview() {
                             .fillMaxWidth()
                             .height(100.dp),
                         label = "Item 2",
+                        itemUpdated = itemUpdated,
+                    )
+                },
+                {
+                    BlueprintItem(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(100.dp),
+                        label = "Item 3",
+                        itemUpdated = itemUpdated,
+                    )
+                },
+                {
+                    BlueprintItem(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(100.dp),
+                        label = "Item 3",
+                        itemUpdated = itemUpdated,
+                    )
+                },
+                {
+                    BlueprintItem(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(100.dp),
+                        label = "Item 3",
                         itemUpdated = itemUpdated,
                     )
                 },

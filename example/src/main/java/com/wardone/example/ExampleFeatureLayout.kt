@@ -73,7 +73,7 @@ fun ExampleFeatureLayout(
 
 @Preview
 @Composable
-fun ExampleBlueprintPreview() {
+fun ExampleFeatureLayoutBlueprintPreview() {
     BlueprintPreview { itemUpdated ->
         ExampleFeatureLayout(
             hero = {

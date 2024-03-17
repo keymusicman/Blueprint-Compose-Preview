@@ -27,6 +27,7 @@ import com.wardone.bluprint.constants.Direction
 import com.wardone.bluprint.items.BlueprintItemData
 import com.wardone.bluprint.grid.utils.createArrowPath
 import com.wardone.bluprint.grid.utils.drawBlueprintLineLabel
+import kotlin.math.min
 
 @Composable
 fun BlueprintGrid(
@@ -90,6 +91,9 @@ fun BlueprintGrid(
         val textMeasurer = rememberTextMeasurer()
         val backgroundColor = MaterialTheme.colorScheme.background
 
+        val measuredLineWidth = 4f
+        val minimumScale = 0.05f
+
         /* draw blueprint items measured lines */
         Canvas(
             modifier = Modifier,
@@ -115,31 +119,40 @@ fun BlueprintGrid(
                         )
                     )
 
-                    val clashesWithExistingLine = completedBlueprintLines.any {
-                        it.clashes(blueprintLine)
+                    val intersectsOtherLine = completedBlueprintLines.any {
+                        it.intersects(blueprintLine)
                     }
 
-                    if (clashesWithExistingLine) {
+                    if (intersectsOtherLine) {
                         return@lineOfSightEntries
                     }
 
-                    drawLine(
-                        start = blueprintLine.start,
-                        end = blueprintLine.end,
-                        color = Color.White,
-                        strokeWidth = 6f,
-                    )
+                    val intersectsOtherBox = blueprintItems
+                        .filter {
+                            it.value != currentEntry.value && it.value != other
+                        }
+                        .any {
+                            blueprintLine.intersects(it.value)
+                        }
+
+                    if (intersectsOtherBox) {
+                        return@lineOfSightEntries
+                    }
+
+
+                    val width = min(measuredLineWidth, blueprintLine.length * minimumScale)
 
                     drawLine(
                         start = blueprintLine.start,
                         end = blueprintLine.end,
                         color = Color.White,
-                        strokeWidth = 6f,
+                        strokeWidth = width,
                     )
 
                     val upArrowPath = createArrowPath(
                         direction = Direction.Top,
-                        tip = blueprintLine.start
+                        tip = blueprintLine.start,
+                        blueprintLine.length,
                     )
 
                     drawOutline(
@@ -149,7 +162,8 @@ fun BlueprintGrid(
 
                     val downArrowPath = createArrowPath(
                         direction = Direction.Bottom,
-                        tip = blueprintLine.end
+                        tip = blueprintLine.end,
+                        blueprintLine.length,
                     )
 
                     drawOutline(
@@ -163,7 +177,8 @@ fun BlueprintGrid(
                 }
 
                 /* draw horizontal connecting lines where there is direct line of sight */
-                blueprintItems.values.filter { other ->
+                blueprintItems.values
+                    .filter { other ->
                     currentEntry.value != other && currentEntry.value isDirectlyLeftOf other
                 }.forEach lineOfSightEntries@ { other ->
 
@@ -174,28 +189,31 @@ fun BlueprintGrid(
                         ),
                         end = Offset(
                             x = other.position.x,
-                            y = other.position.y + (currentEntry.value.size.height / 2),
+                            y = other.position.y + (other.size.height / 2),
                         )
                     )
 
                     val clashesWithExistingLine = completedBlueprintLines.any {
-                        it.clashes(blueprintLine)
+                        it.intersects(blueprintLine)
                     }
 
                     if (clashesWithExistingLine) {
                         return@lineOfSightEntries
                     }
 
+                    val width = min(measuredLineWidth, blueprintLine.length * minimumScale)
+
                     drawLine(
                         start = blueprintLine.start,
                         end = blueprintLine.end,
                         color = Color.White,
-                        strokeWidth = 6f,
+                        strokeWidth = width,
                     )
 
                     val leftArrowPath = createArrowPath(
                         direction = Direction.Left,
-                        tip = blueprintLine.start
+                        tip = blueprintLine.start,
+                        blueprintLine.length,
                     )
 
                     drawOutline(
@@ -205,7 +223,8 @@ fun BlueprintGrid(
 
                     val rightArrowPath = createArrowPath(
                         direction = Direction.Right,
-                        tip = blueprintLine.end
+                        tip = blueprintLine.end,
+                        blueprintLine.length,
                     )
 
                     drawOutline(
@@ -236,23 +255,27 @@ fun BlueprintGrid(
                             y = currentEntry.value.position.y + (currentEntry.value.size.height / 2),
                         )
                     )
+
+                    val width = min(measuredLineWidth, blueprintLine.length * minimumScale)
+
                     drawLine(
                         start = blueprintLine.start,
                         end = blueprintLine.end,
                         color = Color.White,
-                        strokeWidth = 6f,
+                        strokeWidth = width,
                     )
 
                     drawLine(
                         start = blueprintLine.start,
                         end = blueprintLine.end,
                         color = Color.White,
-                        strokeWidth = 6f,
+                        strokeWidth = width,
                     )
 
                     val leftArrowPath = createArrowPath(
                         direction = Direction.Left,
-                        tip = blueprintLine.end
+                        tip = blueprintLine.end,
+                        blueprintLine.length,
                     )
 
                     drawOutline(
@@ -262,7 +285,8 @@ fun BlueprintGrid(
 
                     val rightArrowPath = createArrowPath(
                         direction = Direction.Right,
-                        tip = blueprintLine.start
+                        tip = blueprintLine.start,
+                        blueprintLine.length,
                     )
 
                     drawOutline(
@@ -290,16 +314,19 @@ fun BlueprintGrid(
                         )
                     )
 
+                    val width = min(measuredLineWidth, blueprintLine.length * minimumScale)
+
                     drawLine(
                         start = blueprintLine.start,
                         end = blueprintLine.end,
                         color = Color.White,
-                        strokeWidth = 6f,
+                        strokeWidth = width,
                     )
 
                     val upArrowPath = createArrowPath(
                         direction = Direction.Top,
-                        tip = blueprintLine.end
+                        tip = blueprintLine.end,
+                        blueprintLine.length,
                     )
 
                     drawOutline(
@@ -309,7 +336,8 @@ fun BlueprintGrid(
 
                     val downArrowPath = createArrowPath(
                         direction = Direction.Bottom,
-                        tip = blueprintLine.start
+                        tip = blueprintLine.start,
+                        blueprintLine.length,
                     )
 
                     drawOutline(
@@ -337,16 +365,19 @@ fun BlueprintGrid(
                         )
                     )
 
+                    val width = min(measuredLineWidth, blueprintLine.length * minimumScale)
+
                     drawLine(
                         start = blueprintLine.start,
                         end = blueprintLine.end,
                         color = Color.White,
-                        strokeWidth = 6f,
+                        strokeWidth = width,
                     )
 
                     val leftArrowPath = createArrowPath(
                         direction = Direction.Left,
-                        tip = blueprintLine.start
+                        tip = blueprintLine.start,
+                        blueprintLine.length,
                     )
 
                     drawOutline(
@@ -356,7 +387,8 @@ fun BlueprintGrid(
 
                     val rightArrowPath = createArrowPath(
                         direction = Direction.Right,
-                        tip = blueprintLine.end
+                        tip = blueprintLine.end,
+                        blueprintLine.length,
                     )
 
                     drawOutline(
@@ -384,16 +416,19 @@ fun BlueprintGrid(
                         )
                     )
 
+                    val width = min(measuredLineWidth, blueprintLine.length * minimumScale)
+
                     drawLine(
                         start = blueprintLine.start,
                         end = blueprintLine.end,
                         color = Color.White,
-                        strokeWidth = 6f,
+                        strokeWidth = width,
                     )
 
                     val upArrowPath = createArrowPath(
                         direction = Direction.Top,
-                        tip = blueprintLine.start
+                        tip = blueprintLine.start,
+                        blueprintLine.length,
                     )
 
                     drawOutline(
@@ -403,7 +438,8 @@ fun BlueprintGrid(
 
                     val downArrowPath = createArrowPath(
                         direction = Direction.Bottom,
-                        tip = blueprintLine.end
+                        tip = blueprintLine.end,
+                        blueprintLine.length,
                     )
 
                     drawOutline(
