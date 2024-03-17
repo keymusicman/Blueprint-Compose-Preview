@@ -105,19 +105,34 @@ fun BlueprintGrid(
 
                 /* draw VERTICAL connecting lines where there is direct line of sight */
                 blueprintItems.values.filter { other ->
-                    currentEntry.value != other && currentEntry.value isDirectlyAbove other
+                    currentEntry.value != other && (currentEntry.value isDirectlyAbove other || currentEntry.value isDirectlyBelow other)
                 }.forEach lineOfSightEntries@ { other ->
 
-                    val blueprintLine = BlueprintLine(
-                        start = Offset(
-                            x = currentEntry.value.position.x + (currentEntry.value.size.width / 2),
-                            y = currentEntry.value.position.y + currentEntry.value.size.height,
-                        ),
-                        end = Offset(
-                            x = currentEntry.value.position.x + (currentEntry.value.size.width / 2),
-                            y = other.position.y,
+                    val isAbove = currentEntry.value isDirectlyAbove other
+
+                    val blueprintLine = if (isAbove) {
+                        BlueprintLine(
+                            start = Offset(
+                                x = currentEntry.value.position.x + (currentEntry.value.size.width / 2),
+                                y = currentEntry.value.position.y + currentEntry.value.size.height,
+                            ),
+                            end = Offset(
+                                x = currentEntry.value.position.x + (currentEntry.value.size.width / 2),
+                                y = other.position.y,
+                            )
                         )
-                    )
+                    } else {
+                        BlueprintLine(
+                            start = Offset(
+                                x = currentEntry.value.position.x + (currentEntry.value.size.width / 2),
+                                y = currentEntry.value.position.y,
+                            ),
+                            end = Offset(
+                                x = currentEntry.value.position.x + (currentEntry.value.size.width / 2),
+                                y = other.position.y + other.size.height,
+                            )
+                        )
+                    }
 
                     val intersectsOtherLine = completedBlueprintLines.any {
                         it.intersects(blueprintLine)
@@ -139,7 +154,6 @@ fun BlueprintGrid(
                         return@lineOfSightEntries
                     }
 
-
                     val width = min(measuredLineWidth, blueprintLine.length * minimumScale)
 
                     drawLine(
@@ -151,8 +165,8 @@ fun BlueprintGrid(
 
                     val upArrowPath = createArrowPath(
                         direction = Direction.Top,
-                        tip = blueprintLine.start,
-                        blueprintLine.length,
+                        tip = if (isAbove) blueprintLine.start else blueprintLine.end,
+                        lengthOfLine = blueprintLine.length,
                     )
 
                     drawOutline(
@@ -162,8 +176,8 @@ fun BlueprintGrid(
 
                     val downArrowPath = createArrowPath(
                         direction = Direction.Bottom,
-                        tip = blueprintLine.end,
-                        blueprintLine.length,
+                        tip = if (isAbove) blueprintLine.end else blueprintLine.start,
+                        lengthOfLine = blueprintLine.length,
                     )
 
                     drawOutline(
@@ -179,25 +193,52 @@ fun BlueprintGrid(
                 /* draw horizontal connecting lines where there is direct line of sight */
                 blueprintItems.values
                     .filter { other ->
-                    currentEntry.value != other && currentEntry.value isDirectlyLeftOf other
+                    currentEntry.value != other && (currentEntry.value isDirectlyLeftOf other || currentEntry.value isDirectlyRightOf other )
                 }.forEach lineOfSightEntries@ { other ->
 
-                    val blueprintLine = BlueprintLine(
-                        start = Offset(
-                            x = currentEntry.value.position.x + currentEntry.value.size.width,
-                            y = currentEntry.value.position.y + (currentEntry.value.size.height / 2),
-                        ),
-                        end = Offset(
-                            x = other.position.x,
-                            y = other.position.y + (other.size.height / 2),
-                        )
-                    )
+                    val isLeft = currentEntry.value isDirectlyLeftOf other
 
-                    val clashesWithExistingLine = completedBlueprintLines.any {
+                    val blueprintLine = if (isLeft) {
+                        BlueprintLine(
+                            start = Offset(
+                                x = currentEntry.value.position.x + currentEntry.value.size.width,
+                                y = currentEntry.value.position.y + (currentEntry.value.size.height / 2),
+                            ),
+                            end = Offset(
+                                x = other.position.x,
+                                y = currentEntry.value.position.y + (currentEntry.value.size.height / 2),
+                            )
+                        )
+                    } else {
+                        BlueprintLine(
+                            start = Offset(
+                                x = currentEntry.value.position.x,
+                                y = currentEntry.value.position.y + (currentEntry.value.size.height / 2),
+                            ),
+                            end = Offset(
+                                x = other.position.x + other.size.width,
+                                y = currentEntry.value.position.y + (currentEntry.value.size.height / 2),
+                            )
+                        )
+                    }
+
+                    val intersectsOtherLine = completedBlueprintLines.any {
                         it.intersects(blueprintLine)
                     }
 
-                    if (clashesWithExistingLine) {
+                    if (intersectsOtherLine) {
+                        return@lineOfSightEntries
+                    }
+
+                    val intersectsOtherBox = blueprintItems
+                        .filter {
+                            it.value != currentEntry.value && it.value != other
+                        }
+                        .any {
+                            blueprintLine.intersects(it.value)
+                        }
+
+                    if (intersectsOtherBox) {
                         return@lineOfSightEntries
                     }
 
@@ -212,7 +253,7 @@ fun BlueprintGrid(
 
                     val leftArrowPath = createArrowPath(
                         direction = Direction.Left,
-                        tip = blueprintLine.start,
+                        tip = if (isLeft) blueprintLine.start else blueprintLine.end,
                         blueprintLine.length,
                     )
 
@@ -223,7 +264,7 @@ fun BlueprintGrid(
 
                     val rightArrowPath = createArrowPath(
                         direction = Direction.Right,
-                        tip = blueprintLine.end,
+                        tip = if (isLeft) blueprintLine.end else blueprintLine.start,
                         blueprintLine.length,
                     )
 
