@@ -30,15 +30,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.wardone.bluprint.constants.SemanticColors
 import java.text.DecimalFormat
 import java.util.UUID
 
 @Composable
 fun BlueprintItem(
+    modifier: Modifier = Modifier,
     id: String = remember {
         UUID.randomUUID().toString()
     },
-    modifier: Modifier,
     label: String,
     parentConnectionConfig: ParentConnectionConfig = WherePossible,
     itemUpdated: (BlueprintItemData) -> Unit,
@@ -61,7 +62,7 @@ fun BlueprintItem(
                 color = Color.White,
             )
             .background(
-                color = MaterialTheme.colorScheme.background,
+                color = SemanticColors.BlueprintBackground,
             )
             .onGloballyPositioned { layoutCoordinates ->
 
@@ -120,7 +121,7 @@ fun BlueprintItem(
         if (itemSize.width > (itemSize.height * 2)) {
             Row(
                 modifier = Modifier
-                    .background(MaterialTheme.colorScheme.background)
+                    .background(SemanticColors.BlueprintBackground)
                     .border(1.dp, Color.White.copy(alpha = 0.7f))
                     .padding(2.dp),
                 verticalAlignment = Alignment.CenterVertically,
