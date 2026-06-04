@@ -43,7 +43,7 @@ import com.wardone.bluprint.items.WherePossible
 
 import java.text.DecimalFormat
 
-import androidx.compose.ui.layout.layout
+
 import androidx.compose.ui.layout.onGloballyPositioned
 
 import kotlinx.coroutines.delay
@@ -89,13 +89,9 @@ fun PassiveBlueprintPreview(
                 content()
             }
 
-            // Draw the visual boxes over the passively detected nodes in a zero-size box so it doesn't affect parent layout
-            Box(modifier = Modifier.layout { measurable, constraints ->
-                val placeable = measurable.measure(constraints)
-                layout(0, 0) {
-                    placeable.place(0, 0)
-                }
-            }) {
+            // Draw the visual boxes over the passively detected nodes inside a Box
+            // that fills the parent, preventing clipping during zoom
+            Box(modifier = Modifier.fillMaxSize()) {
                 blueprintItemDataState.values.forEach { item ->
                     PassiveBlueprintItemOverlay(item)
                 }

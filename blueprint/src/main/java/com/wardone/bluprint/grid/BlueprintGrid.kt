@@ -96,7 +96,7 @@ fun BlueprintGrid(
 
         /* draw blueprint items measured lines */
         Canvas(
-            modifier = Modifier,
+            modifier = Modifier.fillMaxSize(),
         ) {
 
             blueprintItems.forEach { currentEntry ->
