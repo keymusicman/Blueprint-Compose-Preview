@@ -44,8 +44,7 @@ import com.wardone.bluprint.items.WherePossible
 import java.text.DecimalFormat
 
 
-import android.view.ViewTreeObserver
-import androidx.compose.runtime.DisposableEffect
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.runtime.mutableIntStateOf
 
 @Composable
@@ -59,55 +58,43 @@ fun PassiveBlueprintPreview(
         var refreshKey by remember { mutableIntStateOf(0) }
         val view = LocalView.current
 
-        // Hook directly into the Android View lifecycle, which Android Studio's Preview engine faithfully executes.
-        // This avoids relying on Coroutines (LaunchedEffect) which get paused/killed in static previews.
-        DisposableEffect(view) {
-            val listener = ViewTreeObserver.OnGlobalLayoutListener {
+        Box(
+            modifier = Modifier.onGloballyPositioned {
+                // Compose guarantees this fires on init and scale/zoom events
+                refreshKey++
                 val newMap = extractBlueprintItemsFromSemantics(view)
                 if (newMap.isNotEmpty()) {
                     blueprintItemDataState = newMap
                 }
-                refreshKey++ // Force redraw of Canvas bounds
             }
-            view.viewTreeObserver.addOnGlobalLayoutListener(listener)
-            
-            // Initial extraction attempt
-            val initialMap = extractBlueprintItemsFromSemantics(view)
-            if (initialMap.isNotEmpty()) {
-                blueprintItemDataState = initialMap
-            }
-
-            onDispose {
-                view.viewTreeObserver.removeOnGlobalLayoutListener(listener)
-            }
-        }
-
-        BlueprintGrid(
-            gridSize = 24.dp,
-            blueprintItems = blueprintItemDataState,
-            refreshKey = refreshKey
         ) {
-            // DIAGNOSTIC OVERLAY
-            Text(
-                text = "Redraws: $refreshKey",
-                color = androidx.compose.ui.graphics.Color.Red,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(16.dp)
-            )
-
-            // Fade the actual content so the blueprint overlay pops
-            Box(
-                modifier = Modifier.alpha(0.5f)
+            BlueprintGrid(
+                gridSize = 24.dp,
+                blueprintItems = blueprintItemDataState,
+                refreshKey = refreshKey
             ) {
-                content()
-            }
+                // DIAGNOSTIC OVERLAY
+                Text(
+                    text = "Redraws: $refreshKey",
+                    color = androidx.compose.ui.graphics.Color.Red,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(16.dp)
+                )
 
-            // Draw the visual boxes over the passively detected nodes inside a Box
-            // that fills the parent, preventing clipping during zoom
-            Box(modifier = Modifier.fillMaxSize()) {
-                refreshKey.hashCode() // Read state to force Box content redraw
-                blueprintItemDataState.values.forEach { item ->
-                    PassiveBlueprintItemOverlay(item)
+                // Fade the actual content so the blueprint overlay pops
+                Box(
+                    modifier = Modifier.alpha(0.5f)
+                ) {
+                    content()
+                }
+
+                // Draw the visual boxes over the passively detected nodes inside a Box
+                // that fills the parent, preventing clipping during zoom
+                Box(modifier = Modifier.fillMaxSize()) {
+                    refreshKey.hashCode() // Read state to force Box content redraw
+                    blueprintItemDataState.values.forEach { item ->
+                        PassiveBlueprintItemOverlay(item)
+                    }
                 }
             }
         }
