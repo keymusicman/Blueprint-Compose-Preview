@@ -93,3 +93,15 @@ fun ExampleSimpleColumnBlueprintPreview() {
         )
     }
 }
+@Preview
+@Composable
+fun PassiveExampleSimpleColumnBlueprintPreview() {
+    com.wardone.bluprint.preview.PassiveBlueprintPreview {
+        ExampleSimpleColumn(
+            listOf(
+                { androidx.compose.material3.Text("Passive Item 1", modifier = Modifier.fillMaxWidth().height(100.dp)) },
+                { androidx.compose.material3.Text("Passive Item 2", modifier = Modifier.fillMaxWidth().height(100.dp)) }
+            )
+        )
+    }
+}
