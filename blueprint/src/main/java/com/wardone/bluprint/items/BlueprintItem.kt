@@ -65,25 +65,29 @@ fun BlueprintItem(
                 color = SemanticColors.BlueprintBackground,
             )
             .onGloballyPositioned { layoutCoordinates ->
+                
+                // Android Studio Preview often reports 0x0 during zoom/tab transitions.
+                // Ignore these spurious updates to retain the last known good layout size.
+                if (layoutCoordinates.size.width > 0 && layoutCoordinates.size.height > 0) {
+                    itemSize = layoutCoordinates.size
 
-                itemSize = layoutCoordinates.size
-
-                /* tell the parent about our latest position and size */
-                itemUpdated(
-                    BlueprintItemData(
-                        id = id,
-                        label = label,
-                        position = Offset(
-                            x = layoutCoordinates.boundsInRoot().left,
-                            y = layoutCoordinates.boundsInRoot().top,
-                        ),
-                        size = Size(
-                            width = layoutCoordinates.size.width.toFloat(),
-                            height = layoutCoordinates.size.height.toFloat(),
-                        ),
-                        parentConnectionConfig = parentConnectionConfig,
+                    /* tell the parent about our latest position and size */
+                    itemUpdated(
+                        BlueprintItemData(
+                            id = id,
+                            label = label,
+                            position = Offset(
+                                x = layoutCoordinates.boundsInRoot().left,
+                                y = layoutCoordinates.boundsInRoot().top,
+                            ),
+                            size = Size(
+                                width = layoutCoordinates.size.width.toFloat(),
+                                height = layoutCoordinates.size.height.toFloat(),
+                            ),
+                            parentConnectionConfig = parentConnectionConfig,
+                        )
                     )
-                )
+                }
             },
         contentAlignment = Alignment.Center,
     ) {

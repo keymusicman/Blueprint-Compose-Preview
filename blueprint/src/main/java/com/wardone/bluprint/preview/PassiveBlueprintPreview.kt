@@ -83,11 +83,14 @@ fun PassiveBlueprintPreview(
             Box(
                 modifier = Modifier
                     .alpha(0.5f)
-                    .onGloballyPositioned {
-                        // Extract during layout to ensure we have the latest semantics
-                        val newMap = extractBlueprintItemsFromSemantics(view)
-                        if (newMap.isNotEmpty()) {
-                            blueprintItemDataState = newMap
+                    .onGloballyPositioned { layoutCoordinates ->
+                        // Ignore 0x0 sizes from Android Studio zoom/tab lifecycle events
+                        if (layoutCoordinates.size.width > 0 && layoutCoordinates.size.height > 0) {
+                            // Extract during layout to ensure we have the latest semantics
+                            val newMap = extractBlueprintItemsFromSemantics(view)
+                            if (newMap.isNotEmpty()) {
+                                blueprintItemDataState = newMap
+                            }
                         }
                     }
             ) {
