@@ -46,6 +46,8 @@ import java.text.DecimalFormat
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onGloballyPositioned
 
+import kotlinx.coroutines.delay
+
 @Composable
 fun PassiveBlueprintPreview(
     content: @Composable () -> Unit
@@ -56,6 +58,18 @@ fun PassiveBlueprintPreview(
         }
         val view = LocalView.current
 
+        // Polling loop to recover from Android Studio preview quirks (tab switching, zooming)
+        LaunchedEffect(view) {
+            while (true) {
+                delay(500)
+                val newMap = extractBlueprintItemsFromSemantics(view)
+                // Only update if we found something, preventing temporary IDE detaches from wiping the state
+                if (newMap.isNotEmpty()) {
+                    blueprintItemDataState = newMap
+                }
+            }
+        }
+
         BlueprintGrid(
             gridSize = 24.dp,
             blueprintItemDataState
@@ -65,8 +79,11 @@ fun PassiveBlueprintPreview(
                 modifier = Modifier
                     .alpha(0.5f)
                     .onGloballyPositioned {
-                        // Extract during layout to ensure we have the latest semantics and it works in Studio Preview
-                        blueprintItemDataState = extractBlueprintItemsFromSemantics(view)
+                        // Extract during layout to ensure we have the latest semantics
+                        val newMap = extractBlueprintItemsFromSemantics(view)
+                        if (newMap.isNotEmpty()) {
+                            blueprintItemDataState = newMap
+                        }
                     }
             ) {
                 content()
