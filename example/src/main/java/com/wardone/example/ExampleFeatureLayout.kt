@@ -17,6 +17,7 @@ import com.wardone.bluprint.items.BlueprintItem
 import com.wardone.bluprint.items.None
 import com.wardone.bluprint.items.Specific
 import com.wardone.bluprint.preview.BlueprintPreview
+import com.wardone.bluprint.preview.PassiveBlueprintPreview
 
 @Composable
 fun ExampleFeatureLayout(
@@ -73,7 +74,7 @@ fun ExampleFeatureLayout(
 
 @Preview
 @Composable
-fun ExampleFeatureLayoutBlueprintPreview() {
+fun ExampleFeatureLayoutActiveBlueprintPreview() {
     BlueprintPreview { itemUpdated ->
         ExampleFeatureLayout(
             hero = {
@@ -113,6 +114,43 @@ fun ExampleFeatureLayoutBlueprintPreview() {
                         .height(50.dp),
                     label = "Footer",
                     itemUpdated = itemUpdated,
+                )
+            }
+        )
+    }
+}
+
+@Preview
+@Composable
+fun ExampleFeatureLayoutActivePassivePreview() {
+    PassiveBlueprintPreview {
+        ExampleFeatureLayout(
+            hero = {
+                Box(
+                    modifier = Modifier
+                        .width(80.dp)
+                        .height(80.dp),
+                )
+            },
+            header = {
+                Box(
+                    modifier = Modifier
+                        .width(144.dp)
+                        .height(48.dp),
+                )
+            },
+            body = {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(288.dp),
+                )
+            },
+            footer = {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp),
                 )
             }
         )

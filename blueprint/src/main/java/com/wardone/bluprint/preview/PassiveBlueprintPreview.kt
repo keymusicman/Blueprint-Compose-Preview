@@ -1,7 +1,7 @@
 package com.wardone.bluprint.preview
 
 import android.view.View
-import androidx.compose.ui.platform.ViewRootForTest
+import android.view.ViewTreeObserver
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -14,7 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -23,14 +23,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.ClipOp
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.clipPath
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.platform.ViewRootForTest
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
@@ -40,33 +42,24 @@ import com.wardone.bluprint.constants.SemanticColors
 import com.wardone.bluprint.grid.BlueprintGrid
 import com.wardone.bluprint.items.BlueprintItemData
 import com.wardone.bluprint.items.WherePossible
-
 import java.text.DecimalFormat
 
-
-import android.view.ViewTreeObserver
-import androidx.compose.runtime.DisposableEffect
-
-import androidx.compose.ui.platform.LocalInspectionMode
-
-import androidx.compose.ui.layout.onGloballyPositioned
-import kotlinx.coroutines.delay
+// THE SURVIVOR CACHE: IMMUNE TO LAYOUTLIB'S RE-COMPOSITION WIPES
+private var staticBlueprintCache: Map<String, BlueprintItemData> = emptyMap()
 
 @Composable
 fun PassiveBlueprintPreview(
     content: @Composable () -> Unit
 ) {
     BlueprintTheme {
+        // Initialize state directly from the static cache to bypass Layoutlib zoom wipes
         var blueprintItemDataState by remember {
-            mutableStateOf<Map<String, BlueprintItemData>>(emptyMap())
+            mutableStateOf(staticBlueprintCache)
         }
         val view = LocalView.current
         val isInspectionMode = LocalInspectionMode.current
-        
+
         // This effect acts as a debounce/recovery mechanism.
-        // It fires whenever the view actually draws a frame.
-        // Because Android Studio's preview can suspend midway through a layout,
-        // we hook into the Android View tree to guarantee we capture the final drawn dimensions.
         DisposableEffect(view) {
             val listener = ViewTreeObserver.OnGlobalLayoutListener {
                 if (view.width > 0 && view.height > 0) {
@@ -74,6 +67,7 @@ fun PassiveBlueprintPreview(
                         val newMap = extractBlueprintItemsFromSemantics(view)
                         if (newMap.isNotEmpty() && newMap != blueprintItemDataState) {
                             blueprintItemDataState = newMap
+                            staticBlueprintCache = newMap // Anchor to cache
                         }
                     } catch (e: Exception) {
                         android.util.Log.e("PassiveBlueprint", "Recovery extraction failed", e)
@@ -86,15 +80,13 @@ fun PassiveBlueprintPreview(
             }
         }
 
-        // CRITICAL IDE HACK: Android Studio's static preview engine violently suspends rendering
-        // and refuses to fire ViewTreeObserver listeners after zooms or tab switches.
-        // If we detect we are in the static IDE preview, we FORCE a synchronous semantics extraction
-        // directly during the Compose phase.
+        // CRITICAL IDE HACK: Forcing a synchronous semantics extraction directly during the Compose phase.
         if (isInspectionMode) {
             try {
                 val immediateMap = extractBlueprintItemsFromSemantics(view)
                 if (immediateMap.isNotEmpty() && immediateMap != blueprintItemDataState) {
                     blueprintItemDataState = immediateMap
+                    staticBlueprintCache = immediateMap // Anchor to cache
                 }
             } catch (e: Exception) {
                 // Ignore
@@ -115,6 +107,7 @@ fun PassiveBlueprintPreview(
                             val newMap = extractBlueprintItemsFromSemantics(view)
                             if (newMap.isNotEmpty() && newMap != blueprintItemDataState) {
                                 blueprintItemDataState = newMap
+                                staticBlueprintCache = newMap // Anchor to cache
                             }
                         }
                     }
@@ -123,17 +116,14 @@ fun PassiveBlueprintPreview(
             }
 
             // GRACEFUL DEGRADATION & RECOVERY:
-            // If the IDE preview sandbox zeroes out the layout and we lose all items, 
-            // display the assemble prompt, but ALSO aggressively poll the view tree 
-            // on every frame draw to instantly recover the moment the IDE yields a valid layout.
             if (blueprintItemDataState.isEmpty()) {
-                
                 DisposableEffect(view) {
                     val listener = ViewTreeObserver.OnPreDrawListener {
                         try {
                             val recoveredMap = extractBlueprintItemsFromSemantics(view)
                             if (recoveredMap.isNotEmpty() && recoveredMap != blueprintItemDataState) {
                                 blueprintItemDataState = recoveredMap
+                                staticBlueprintCache = recoveredMap // Anchor to cache
                             }
                         } catch (e: Exception) {
                             // Ignore during aggressive polling
@@ -269,8 +259,6 @@ private fun PassiveBlueprintItemOverlay(itemData: BlueprintItemData) {
     }
 }
 
-
-
 private fun findAndroidComposeView(view: View): View? {
     if (view.javaClass.name.contains("AndroidComposeView")) {
         return view
@@ -286,8 +274,7 @@ private fun findAndroidComposeView(view: View): View? {
 
 fun extractBlueprintItemsFromSemantics(view: View): Map<String, BlueprintItemData> {
     val items = mutableMapOf<String, BlueprintItemData>()
-    
-    // Find the nearest AndroidComposeView (which implements ViewRootForTest)
+
     var composeView: ViewRootForTest? = null
     var currentView: View? = view
     while (currentView != null) {
@@ -308,17 +295,14 @@ fun extractBlueprintItemsFromSemantics(view: View): Map<String, BlueprintItemDat
             android.util.Log.e("PassiveBlueprint", "Direct extraction failed", e)
         }
     } else {
-        // Fallback for Android Studio Preview environment where the view hierarchy might be different
         try {
-            // In Studio Preview, the view is often a ComposeViewAdapter which holds the AndroidComposeView
-            // Search ONLY the direct tree of the current preview
             val androidComposeView = findAndroidComposeView(view)
-            
+
             if (androidComposeView != null) {
                 val semanticsOwnerField = androidComposeView.javaClass.getDeclaredMethod("getSemanticsOwner")
                 semanticsOwnerField.isAccessible = true
                 val semanticsOwner = semanticsOwnerField.invoke(androidComposeView)
-                
+
                 if (semanticsOwner != null) {
                     val rootSemanticsNodeMethod = semanticsOwner.javaClass.getDeclaredMethod("getRootSemanticsNode")
                     rootSemanticsNodeMethod.isAccessible = true
@@ -326,7 +310,7 @@ fun extractBlueprintItemsFromSemantics(view: View): Map<String, BlueprintItemDat
                     traverseSemanticsNode(rootNode, items)
                 }
             } else {
-                 android.util.Log.e("PassiveBlueprint", "Could not find AndroidComposeView in hierarchy via reflection")
+                android.util.Log.e("PassiveBlueprint", "Could not find AndroidComposeView in hierarchy via reflection")
             }
         } catch (ex: Exception) {
             android.util.Log.e("PassiveBlueprint", "Fallback extraction failed", ex)
@@ -340,14 +324,12 @@ fun traverseSemanticsNode(node: androidx.compose.ui.semantics.SemanticsNode, ite
         val id = node.id
         val bounds = node.boundsInRoot
 
-        // Extract configuration for a better label
         var label = "Node $id"
         var hasExplicitLabel = false
         try {
             val config = node.config
             val configString = config.toString()
 
-            // Look for TestTag, Text, or ContentDescription in the SemanticsConfiguration string
             val testTagMatch = Regex("TestTag\\s*[:=]\\s*'([^']+)'").find(configString)
             val textMatch = Regex("Text\\s*[:=]\\s*\\[([^\\]]+)\\]").find(configString)
             val contentDescMatch = Regex("ContentDescription\\s*[:=]\\s*\\[([^\\]]+)\\]").find(configString)
@@ -366,9 +348,6 @@ fun traverseSemanticsNode(node: androidx.compose.ui.semantics.SemanticsNode, ite
             // Ignore config parsing errors
         }
 
-        // Only draw overlays for nodes that explicitly define semantics we care about,
-        // or if it's explicitly tagged via Modifier.blueprintId(). This prevents structural
-        // container nodes (like a fillMaxSize Column) from covering the whole screen with an overlay.
         if (hasExplicitLabel && bounds.width > 0 && bounds.height > 0 && !node.isRoot) {
             items[id.toString()] = BlueprintItemData(
                 id = id.toString(),

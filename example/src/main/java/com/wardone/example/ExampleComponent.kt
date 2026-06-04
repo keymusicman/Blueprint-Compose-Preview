@@ -36,6 +36,7 @@ import com.wardone.bluprint.items.BlueprintItem
 import com.wardone.bluprint.items.None
 import com.wardone.bluprint.items.Specific
 import com.wardone.bluprint.preview.BlueprintPreview
+import com.wardone.bluprint.preview.PassiveBlueprintPreview
 
 @Composable
 fun ExampleComponent(
@@ -74,50 +75,6 @@ fun ExampleComponent(
         ) {
             action()
         }
-    }
-}
-
-@Preview(device = "spec:width=300dp,height=300dp,dpi=440")
-@Composable
-fun ExampleComponentBlueprintPreview() {
-    BlueprintPreview { itemUpdated ->
-        ExampleComponent(
-            image = {
-                BlueprintItem(
-                    label = "Image",
-                    itemUpdated = itemUpdated,
-                )
-            },
-            title = {
-                BlueprintItem(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(30.dp),
-                    label = "Title",
-                    itemUpdated = itemUpdated,
-                )
-            },
-            body = {
-                BlueprintItem(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(60.dp),
-                    label = "Body",
-                    itemUpdated = itemUpdated,
-                    parentConnectionConfig = Specific(
-                        top = None,
-                    )
-                )
-            },
-            action = {
-                BlueprintItem(
-                    modifier = Modifier
-                        .size(50.dp),
-                    label = "Action",
-                    itemUpdated = itemUpdated,
-                )
-            }
-        )
     }
 }
 
@@ -207,5 +164,13 @@ fun ExampleComponentStandardPreview() {
                 }
             }
         )
+    }
+}
+
+@Preview(device = "spec:width=300dp,height=300dp,dpi=440")
+@Composable
+fun ExampleComponentBlueprintPreview() {
+    PassiveBlueprintPreview {
+        ExampleComponentStandardPreview()
     }
 }
