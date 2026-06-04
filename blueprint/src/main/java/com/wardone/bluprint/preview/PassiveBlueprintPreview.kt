@@ -122,10 +122,30 @@ fun PassiveBlueprintPreview(
                 content()
             }
 
-            // GRACEFUL DEGRADATION:
+            // GRACEFUL DEGRADATION & RECOVERY:
             // If the IDE preview sandbox zeroes out the layout and we lose all items, 
-            // inform the developer they need to re-assemble.
+            // display the assemble prompt, but ALSO aggressively poll the view tree 
+            // on every frame draw to instantly recover the moment the IDE yields a valid layout.
             if (blueprintItemDataState.isEmpty()) {
+                
+                DisposableEffect(view) {
+                    val listener = ViewTreeObserver.OnPreDrawListener {
+                        try {
+                            val recoveredMap = extractBlueprintItemsFromSemantics(view)
+                            if (recoveredMap.isNotEmpty() && recoveredMap != blueprintItemDataState) {
+                                blueprintItemDataState = recoveredMap
+                            }
+                        } catch (e: Exception) {
+                            // Ignore during aggressive polling
+                        }
+                        true // continue drawing
+                    }
+                    view.viewTreeObserver.addOnPreDrawListener(listener)
+                    onDispose {
+                        view.viewTreeObserver.removeOnPreDrawListener(listener)
+                    }
+                }
+
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
