@@ -234,9 +234,9 @@ fun extractBlueprintItemsFromSemantics(view: View): Map<String, BlueprintItemDat
         // Fallback for Android Studio Preview environment where the view hierarchy might be different
         try {
             // In Studio Preview, the view is often a ComposeViewAdapter which holds the AndroidComposeView
-            // Search children of the root view for AndroidComposeView
+            // Search children of this specific preview's view for AndroidComposeView
             var androidComposeView: View? = null
-            var root = view.rootView
+            val root = view // CRITICAL FIX: Do not use view.rootView, it searches the entire IDE window
             findAndroidComposeView(root) { androidComposeView = it }
             
             val composeView = androidComposeView
