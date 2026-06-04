@@ -87,6 +87,14 @@ fun PassiveBlueprintPreview(
             blueprintItems = blueprintItemDataState,
             refreshKey = refreshKey
         ) {
+            // DIAGNOSTIC OVERLAY
+            Text(
+                text = "Redraws: $refreshKey",
+                color = androidx.compose.ui.graphics.Color.Red,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(16.dp)
+            )
+
             // Fade the actual content so the blueprint overlay pops
             Box(
                 modifier = Modifier.alpha(0.5f)
