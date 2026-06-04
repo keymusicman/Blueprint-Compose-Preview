@@ -47,6 +47,8 @@ import java.text.DecimalFormat
 import android.view.ViewTreeObserver
 import androidx.compose.runtime.DisposableEffect
 
+import androidx.compose.ui.platform.LocalInspectionMode
+
 @Composable
 fun PassiveBlueprintPreview(
     content: @Composable () -> Unit
@@ -56,7 +58,9 @@ fun PassiveBlueprintPreview(
             mutableStateOf<Map<String, BlueprintItemData>>(emptyMap())
         }
         val view = LocalView.current
+        val isInspectionMode = LocalInspectionMode.current
 
+        // In interactive mode or on device, rely on the safe PreDraw listener
         DisposableEffect(view) {
             val listener = ViewTreeObserver.OnPreDrawListener {
                 try {
@@ -70,19 +74,25 @@ fun PassiveBlueprintPreview(
                 true // Always draw
             }
             view.viewTreeObserver.addOnPreDrawListener(listener)
-            
-            // Initial grab
-            try {
-                val initialMap = extractBlueprintItemsFromSemantics(view)
-                if (initialMap.isNotEmpty()) {
-                    blueprintItemDataState = initialMap
-                }
-            } catch (e: Exception) {
-                // Ignore
-            }
 
             onDispose {
                 view.viewTreeObserver.removeOnPreDrawListener(listener)
+            }
+        }
+
+        // CRITICAL IDE HACK: Android Studio's static preview engine violently suspends rendering
+        // and refuses to fire ViewTreeObserver listeners after zooms or tab switches.
+        // If we detect we are in the static IDE preview, we FORCE a synchronous semantics extraction
+        // directly during the Compose phase.
+        if (isInspectionMode) {
+            try {
+                val immediateMap = extractBlueprintItemsFromSemantics(view)
+                if (immediateMap.isNotEmpty() && immediateMap != blueprintItemDataState) {
+                    // Update state synchronously during composition (safe only because it's a static preview hack)
+                    blueprintItemDataState = immediateMap
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("PassiveBlueprint", "Inspection mode synchronous extraction failed", e)
             }
         }
 
