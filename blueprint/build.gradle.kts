@@ -1,11 +1,11 @@
 plugins {
     id("com.android.library")
-    id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.plugin.compose")
 }
 
 android {
     namespace = "com.wardone.blueprint"
-    compileSdk = 34
+    compileSdk = 37
 
     defaultConfig {
         minSdk = 27
@@ -24,29 +24,33 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-    kotlinOptions {
-        jvmTarget = "11"
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     buildFeatures {
         compose = true
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.2"
     }
 }
 
 dependencies {
 
+    implementation("androidx.core:core-ktx:1.19.0")
+    implementation("androidx.appcompat:appcompat:1.7.1")
+    implementation("com.google.android.material:material:1.14.0")
+
     // Jetpack Compose
-    val composeBom = platform("androidx.compose:compose-bom:2023.10.00")
+    val composeBom = platform("androidx.compose:compose-bom:2026.05.01")
     implementation(composeBom)
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.ui:ui-tooling-preview")
     debugImplementation("androidx.compose.ui:ui-tooling")
-    implementation("androidx.constraintlayout:constraintlayout-compose:1.0.1")
+
+    implementation("androidx.constraintlayout:constraintlayout-compose:1.1.1")
+    implementation("androidx.activity:activity-compose:1.13.0")
+    implementation("androidx.navigation:navigation-compose:2.9.8")
 
     testImplementation("junit:junit:4.13.2")
+
+    androidTestImplementation("androidx.test.ext:junit:1.2.1")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
 }
