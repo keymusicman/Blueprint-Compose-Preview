@@ -107,11 +107,31 @@ fun PassiveBlueprintPreview(
                 content()
             }
 
-            // Draw the visual boxes over the passively detected nodes inside a Box
-            // that fills the parent, preventing clipping during zoom
-            Box(modifier = Modifier.fillMaxSize()) {
-                blueprintItemDataState.values.forEach { item ->
-                    PassiveBlueprintItemOverlay(item)
+            // GRACEFUL DEGRADATION:
+            // If the IDE preview sandbox zeroes out the layout and we lose all items, 
+            // inform the developer they need to re-assemble.
+            if (blueprintItemDataState.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Assemble to see Blueprint",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier
+                            .background(SemanticColors.BlueprintBackground.copy(alpha = 0.8f))
+                            .border(1.dp, Color.White)
+                            .padding(16.dp)
+                    )
+                }
+            } else {
+                // Draw the visual boxes over the passively detected nodes inside a Box
+                // that fills the parent, preventing clipping during zoom
+                Box(modifier = Modifier.fillMaxSize()) {
+                    blueprintItemDataState.values.forEach { item ->
+                        PassiveBlueprintItemOverlay(item)
+                    }
                 }
             }
         }
