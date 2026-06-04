@@ -105,12 +105,14 @@ fun BlueprintGrid(
         ) {
             refreshKey.hashCode() // Read state to force redraw if needed
 
-            blueprintItems.forEach { currentEntry ->
+            val validBlueprintItems = blueprintItems.filterValues { it.size.width > 0 && it.size.height > 0 }
+
+            validBlueprintItems.forEach { currentEntry ->
 
                 val completedBlueprintLines = mutableListOf<BlueprintLine>()
 
                 /* draw VERTICAL connecting lines where there is direct line of sight */
-                blueprintItems.values.filter { other ->
+                validBlueprintItems.values.filter { other ->
                     currentEntry.value != other && (currentEntry.value isDirectlyAbove other || currentEntry.value isDirectlyBelow other)
                 }.forEach lineOfSightEntries@ { other ->
 
@@ -137,7 +139,7 @@ fun BlueprintGrid(
                         return@lineOfSightEntries
                     }
 
-                    val intersectsAnyBlueprintItem = blueprintItems
+                    val intersectsAnyBlueprintItem = validBlueprintItems
                         .filter {
                             it.value != currentEntry.value && it.value != other
                         }
@@ -186,7 +188,7 @@ fun BlueprintGrid(
                 }
 
                 /* draw horizontal connecting lines where there is direct line of sight */
-                blueprintItems.values
+                validBlueprintItems.values
                     .filter { other ->
                     currentEntry.value != other && (currentEntry.value isDirectlyLeftOf other || currentEntry.value isDirectlyRightOf other )
                 }.forEach lineOfSightEntries@ { other ->
@@ -214,7 +216,7 @@ fun BlueprintGrid(
                         return@lineOfSightEntries
                     }
 
-                    val intersectsAnyBlueprintItem = blueprintItems
+                    val intersectsAnyBlueprintItem = validBlueprintItems
                         .filter {
                             it.value != currentEntry.value && it.value != other
                         }
@@ -264,7 +266,7 @@ fun BlueprintGrid(
 
                 /* draw direct lines of sight to parent */
 
-                val parentDirectLeft = blueprintItems.values.none { other ->
+                val parentDirectLeft = validBlueprintItems.values.none { other ->
                     currentEntry.value isDirectlyRightOf other
                 } && currentEntry.value.parentConnectionConfig
                     .shouldConnectParent(Direction.Left)
@@ -332,7 +334,7 @@ fun BlueprintGrid(
                     }
                 }
 
-                val parentDirectTop = blueprintItems.values.none { other ->
+                val parentDirectTop = validBlueprintItems.values.none { other ->
                     currentEntry.value isDirectlyBelow other
                 } && currentEntry.value.parentConnectionConfig
                     .shouldConnectParent(Direction.Top)
@@ -393,7 +395,7 @@ fun BlueprintGrid(
                     }
                 }
 
-                val parentDirectRight = blueprintItems.values.none { other ->
+                val parentDirectRight = validBlueprintItems.values.none { other ->
                     currentEntry.value isDirectlyLeftOf other
                 } && currentEntry.value.parentConnectionConfig
                     .shouldConnectParent(Direction.Right)
@@ -454,7 +456,7 @@ fun BlueprintGrid(
                     }
                 }
 
-                val parentDirectBottom = blueprintItems.values.none { other ->
+                val parentDirectBottom = validBlueprintItems.values.none { other ->
                     currentEntry.value isDirectlyAbove other
                 } && currentEntry.value.parentConnectionConfig
                     .shouldConnectParent(Direction.Bottom)
