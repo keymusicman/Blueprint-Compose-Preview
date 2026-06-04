@@ -44,8 +44,8 @@ import com.wardone.bluprint.items.WherePossible
 import java.text.DecimalFormat
 
 
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.runtime.mutableIntStateOf
+import android.view.ViewTreeObserver
+import androidx.compose.runtime.DisposableEffect
 
 @Composable
 fun PassiveBlueprintPreview(
@@ -55,46 +55,53 @@ fun PassiveBlueprintPreview(
         var blueprintItemDataState by remember {
             mutableStateOf<Map<String, BlueprintItemData>>(emptyMap())
         }
-        var refreshKey by remember { mutableIntStateOf(0) }
         val view = LocalView.current
 
-        Box(
-            modifier = Modifier.onGloballyPositioned {
-                // Compose guarantees this fires on init and scale/zoom events
-                refreshKey++
-                val newMap = extractBlueprintItemsFromSemantics(view)
-                if (newMap.isNotEmpty()) {
-                    blueprintItemDataState = newMap
-                }
-            }
-        ) {
-            BlueprintGrid(
-                gridSize = 24.dp,
-                blueprintItems = blueprintItemDataState,
-                refreshKey = refreshKey
-            ) {
-                // DIAGNOSTIC OVERLAY
-                Text(
-                    text = "Redraws: $refreshKey",
-                    color = androidx.compose.ui.graphics.Color.Red,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(16.dp)
-                )
-
-                // Fade the actual content so the blueprint overlay pops
-                Box(
-                    modifier = Modifier.alpha(0.5f)
-                ) {
-                    content()
-                }
-
-                // Draw the visual boxes over the passively detected nodes inside a Box
-                // that fills the parent, preventing clipping during zoom
-                Box(modifier = Modifier.fillMaxSize()) {
-                    refreshKey.hashCode() // Read state to force Box content redraw
-                    blueprintItemDataState.values.forEach { item ->
-                        PassiveBlueprintItemOverlay(item)
+        DisposableEffect(view) {
+            val listener = ViewTreeObserver.OnPreDrawListener {
+                try {
+                    val newMap = extractBlueprintItemsFromSemantics(view)
+                    if (newMap.isNotEmpty() && newMap != blueprintItemDataState) {
+                        blueprintItemDataState = newMap
                     }
+                } catch (e: Exception) {
+                    android.util.Log.e("PassiveBlueprint", "PreDraw error", e)
+                }
+                true // Always draw
+            }
+            view.viewTreeObserver.addOnPreDrawListener(listener)
+            
+            // Initial grab
+            try {
+                val initialMap = extractBlueprintItemsFromSemantics(view)
+                if (initialMap.isNotEmpty()) {
+                    blueprintItemDataState = initialMap
+                }
+            } catch (e: Exception) {
+                // Ignore
+            }
+
+            onDispose {
+                view.viewTreeObserver.removeOnPreDrawListener(listener)
+            }
+        }
+
+        BlueprintGrid(
+            gridSize = 24.dp,
+            blueprintItems = blueprintItemDataState
+        ) {
+            // Fade the actual content so the blueprint overlay pops
+            Box(
+                modifier = Modifier.alpha(0.5f)
+            ) {
+                content()
+            }
+
+            // Draw the visual boxes over the passively detected nodes inside a Box
+            // that fills the parent, preventing clipping during zoom
+            Box(modifier = Modifier.fillMaxSize()) {
+                blueprintItemDataState.values.forEach { item ->
+                    PassiveBlueprintItemOverlay(item)
                 }
             }
         }
@@ -199,6 +206,19 @@ private fun PassiveBlueprintItemOverlay(itemData: BlueprintItemData) {
 
 
 
+private fun findAndroidComposeView(view: View): View? {
+    if (view.javaClass.name.contains("AndroidComposeView")) {
+        return view
+    }
+    if (view is android.view.ViewGroup) {
+        for (i in 0 until view.childCount) {
+            val found = findAndroidComposeView(view.getChildAt(i))
+            if (found != null) return found
+        }
+    }
+    return null
+}
+
 fun extractBlueprintItemsFromSemantics(view: View): Map<String, BlueprintItemData> {
     val items = mutableMapOf<String, BlueprintItemData>()
     
@@ -226,16 +246,13 @@ fun extractBlueprintItemsFromSemantics(view: View): Map<String, BlueprintItemDat
         // Fallback for Android Studio Preview environment where the view hierarchy might be different
         try {
             // In Studio Preview, the view is often a ComposeViewAdapter which holds the AndroidComposeView
-            // Search children of this specific preview's view for AndroidComposeView
-            var androidComposeView: View? = null
-            val root = view // CRITICAL FIX: Do not use view.rootView, it searches the entire IDE window
-            findAndroidComposeView(root) { androidComposeView = it }
+            // Search ONLY the direct tree of the current preview
+            val androidComposeView = findAndroidComposeView(view)
             
-            val composeView = androidComposeView
-            if (composeView != null) {
-                val semanticsOwnerField = composeView.javaClass.getDeclaredMethod("getSemanticsOwner")
+            if (androidComposeView != null) {
+                val semanticsOwnerField = androidComposeView.javaClass.getDeclaredMethod("getSemanticsOwner")
                 semanticsOwnerField.isAccessible = true
-                val semanticsOwner = semanticsOwnerField.invoke(composeView)
+                val semanticsOwner = semanticsOwnerField.invoke(androidComposeView)
                 
                 if (semanticsOwner != null) {
                     val rootSemanticsNodeMethod = semanticsOwner.javaClass.getDeclaredMethod("getRootSemanticsNode")
@@ -251,18 +268,6 @@ fun extractBlueprintItemsFromSemantics(view: View): Map<String, BlueprintItemDat
         }
     }
     return items
-}
-
-private fun findAndroidComposeView(view: View, onFound: (View) -> Unit) {
-    if (view.javaClass.name.contains("AndroidComposeView")) {
-        onFound(view)
-        return
-    }
-    if (view is android.view.ViewGroup) {
-        for (i in 0 until view.childCount) {
-            findAndroidComposeView(view.getChildAt(i), onFound)
-        }
-    }
 }
 
 fun traverseSemanticsNode(node: androidx.compose.ui.semantics.SemanticsNode, items: MutableMap<String, BlueprintItemData>) {

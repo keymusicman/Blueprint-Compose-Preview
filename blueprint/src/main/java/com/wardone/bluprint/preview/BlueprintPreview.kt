@@ -9,11 +9,6 @@ import androidx.compose.ui.unit.dp
 import com.wardone.bluprint.grid.BlueprintGrid
 import com.wardone.bluprint.items.BlueprintItemData
 
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.foundation.layout.Box
-import androidx.compose.ui.Modifier
-
 @Composable
 fun BlueprintPreview(
     content: @Composable (blueprintItemUpdated: (BlueprintItemData) -> Unit) -> Unit
@@ -21,28 +16,16 @@ fun BlueprintPreview(
     BlueprintTheme {
 
         var blueprintItemDataState by remember {
-            mutableStateOf<Map<String, BlueprintItemData>>(mutableMapOf())
+            mutableStateOf<Map<String, BlueprintItemData>>(emptyMap())
         }
-        var refreshKey by remember { mutableIntStateOf(0) }
 
-        Box(
-            modifier = Modifier.onGloballyPositioned {
-                refreshKey++
-            }
+        BlueprintGrid(
+            gridSize = 24.dp,
+            blueprintItems = blueprintItemDataState
         ) {
-            BlueprintGrid(
-                gridSize = 24.dp,
-                blueprintItems = blueprintItemDataState,
-                refreshKey = refreshKey
-            ) {
-                content { blueprintItemData ->
-
-                    /**
-                     * as blueprint items get laid out in the preview, they will keep us updated
-                     * here with their most recent position, size etc. then we just update our
-                     * state to refresh the blueprint grid, who will use the data to draw measured
-                     * lines, labels etc.
-                     */
+            content { blueprintItemData ->
+                // Ignore empty layout updates
+                if (blueprintItemData.size.width > 0 && blueprintItemData.size.height > 0) {
                     blueprintItemDataState = blueprintItemDataState
                         .toMutableMap()
                         .apply {
