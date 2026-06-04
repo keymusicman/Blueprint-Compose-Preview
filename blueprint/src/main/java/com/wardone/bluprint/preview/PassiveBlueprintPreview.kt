@@ -44,10 +44,8 @@ import com.wardone.bluprint.items.WherePossible
 import java.text.DecimalFormat
 
 
-import androidx.compose.ui.layout.onGloballyPositioned
-
-import kotlinx.coroutines.delay
-
+import android.view.ViewTreeObserver
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableIntStateOf
 
 @Composable
@@ -61,16 +59,26 @@ fun PassiveBlueprintPreview(
         var refreshKey by remember { mutableIntStateOf(0) }
         val view = LocalView.current
 
-        // Polling loop to recover from Android Studio preview quirks (tab switching, zooming)
-        LaunchedEffect(view) {
-            while (true) {
-                delay(500)
-                refreshKey++ // Unconditionally force a redraw heartbeat
+        // Hook directly into the Android View lifecycle, which Android Studio's Preview engine faithfully executes.
+        // This avoids relying on Coroutines (LaunchedEffect) which get paused/killed in static previews.
+        DisposableEffect(view) {
+            val listener = ViewTreeObserver.OnGlobalLayoutListener {
                 val newMap = extractBlueprintItemsFromSemantics(view)
-                // Only update if we found something, preventing temporary IDE detaches from wiping the state
                 if (newMap.isNotEmpty()) {
                     blueprintItemDataState = newMap
                 }
+                refreshKey++ // Force redraw of Canvas bounds
+            }
+            view.viewTreeObserver.addOnGlobalLayoutListener(listener)
+            
+            // Initial extraction attempt
+            val initialMap = extractBlueprintItemsFromSemantics(view)
+            if (initialMap.isNotEmpty()) {
+                blueprintItemDataState = initialMap
+            }
+
+            onDispose {
+                view.viewTreeObserver.removeOnGlobalLayoutListener(listener)
             }
         }
 
@@ -81,18 +89,7 @@ fun PassiveBlueprintPreview(
         ) {
             // Fade the actual content so the blueprint overlay pops
             Box(
-                modifier = Modifier
-                    .alpha(0.5f)
-                    .onGloballyPositioned { layoutCoordinates ->
-                        // Ignore 0x0 sizes from Android Studio zoom/tab lifecycle events
-                        if (layoutCoordinates.size.width > 0 && layoutCoordinates.size.height > 0) {
-                            // Extract during layout to ensure we have the latest semantics
-                            val newMap = extractBlueprintItemsFromSemantics(view)
-                            if (newMap.isNotEmpty()) {
-                                blueprintItemDataState = newMap
-                            }
-                        }
-                    }
+                modifier = Modifier.alpha(0.5f)
             ) {
                 content()
             }

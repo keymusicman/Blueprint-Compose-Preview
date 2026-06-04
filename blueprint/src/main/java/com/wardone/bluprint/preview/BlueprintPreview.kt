@@ -9,9 +9,10 @@ import androidx.compose.ui.unit.dp
 import com.wardone.bluprint.grid.BlueprintGrid
 import com.wardone.bluprint.items.BlueprintItemData
 
-import androidx.compose.runtime.LaunchedEffect
+import android.view.ViewTreeObserver
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableIntStateOf
-import kotlinx.coroutines.delay
+import androidx.compose.ui.platform.LocalView
 
 @Composable
 fun BlueprintPreview(
@@ -23,11 +24,16 @@ fun BlueprintPreview(
             mutableStateOf<Map<String, BlueprintItemData>>(mutableMapOf())
         }
         var refreshKey by remember { mutableIntStateOf(0) }
+        val view = LocalView.current
 
-        LaunchedEffect(Unit) {
-            while (true) {
-                delay(500)
+        // Hook directly into the Android View lifecycle instead of using coroutines
+        DisposableEffect(view) {
+            val listener = ViewTreeObserver.OnGlobalLayoutListener {
                 refreshKey++
+            }
+            view.viewTreeObserver.addOnGlobalLayoutListener(listener)
+            onDispose {
+                view.viewTreeObserver.removeOnGlobalLayoutListener(listener)
             }
         }
 
