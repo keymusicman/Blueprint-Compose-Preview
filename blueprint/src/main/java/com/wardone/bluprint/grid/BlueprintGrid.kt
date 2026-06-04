@@ -33,6 +33,7 @@ import kotlin.math.min
 fun BlueprintGrid(
     gridSize: Dp,
     blueprintItems: Map<String, BlueprintItemData>,
+    refreshKey: Int = 0,
     content: @Composable () -> Unit
 ) {
 
@@ -55,6 +56,7 @@ fun BlueprintGrid(
         Canvas(
             modifier = Modifier.fillMaxSize(),
         ) {
+            refreshKey.hashCode() // Read state to force redraw if needed
 
             val path = Path()
 
@@ -88,6 +90,9 @@ fun BlueprintGrid(
             }
         }
 
+        /* display content FIRST so measuring lines draw over top of it */
+        content()
+
         val textMeasurer = rememberTextMeasurer()
         val backgroundColor = MaterialTheme.colorScheme.background
 
@@ -98,6 +103,7 @@ fun BlueprintGrid(
         Canvas(
             modifier = Modifier.fillMaxSize(),
         ) {
+            refreshKey.hashCode() // Read state to force redraw if needed
 
             blueprintItems.forEach { currentEntry ->
 
@@ -510,8 +516,5 @@ fun BlueprintGrid(
                 }
             }
         }
-
-        /* display content */
-        content()
     }
 }

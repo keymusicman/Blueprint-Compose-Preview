@@ -48,6 +48,8 @@ import androidx.compose.ui.layout.onGloballyPositioned
 
 import kotlinx.coroutines.delay
 
+import androidx.compose.runtime.mutableIntStateOf
+
 @Composable
 fun PassiveBlueprintPreview(
     content: @Composable () -> Unit
@@ -56,12 +58,14 @@ fun PassiveBlueprintPreview(
         var blueprintItemDataState by remember {
             mutableStateOf<Map<String, BlueprintItemData>>(emptyMap())
         }
+        var refreshKey by remember { mutableIntStateOf(0) }
         val view = LocalView.current
 
         // Polling loop to recover from Android Studio preview quirks (tab switching, zooming)
         LaunchedEffect(view) {
             while (true) {
                 delay(500)
+                refreshKey++ // Unconditionally force a redraw heartbeat
                 val newMap = extractBlueprintItemsFromSemantics(view)
                 // Only update if we found something, preventing temporary IDE detaches from wiping the state
                 if (newMap.isNotEmpty()) {
@@ -72,7 +76,8 @@ fun PassiveBlueprintPreview(
 
         BlueprintGrid(
             gridSize = 24.dp,
-            blueprintItemDataState
+            blueprintItems = blueprintItemDataState,
+            refreshKey = refreshKey
         ) {
             // Fade the actual content so the blueprint overlay pops
             Box(
@@ -92,6 +97,7 @@ fun PassiveBlueprintPreview(
             // Draw the visual boxes over the passively detected nodes inside a Box
             // that fills the parent, preventing clipping during zoom
             Box(modifier = Modifier.fillMaxSize()) {
+                refreshKey.hashCode() // Read state to force Box content redraw
                 blueprintItemDataState.values.forEach { item ->
                     PassiveBlueprintItemOverlay(item)
                 }

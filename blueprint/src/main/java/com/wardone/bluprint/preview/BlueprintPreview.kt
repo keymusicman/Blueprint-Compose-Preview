@@ -9,6 +9,10 @@ import androidx.compose.ui.unit.dp
 import com.wardone.bluprint.grid.BlueprintGrid
 import com.wardone.bluprint.items.BlueprintItemData
 
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableIntStateOf
+import kotlinx.coroutines.delay
+
 @Composable
 fun BlueprintPreview(
     content: @Composable (blueprintItemUpdated: (BlueprintItemData) -> Unit) -> Unit
@@ -18,10 +22,19 @@ fun BlueprintPreview(
         var blueprintItemDataState by remember {
             mutableStateOf<Map<String, BlueprintItemData>>(mutableMapOf())
         }
+        var refreshKey by remember { mutableIntStateOf(0) }
+
+        LaunchedEffect(Unit) {
+            while (true) {
+                delay(500)
+                refreshKey++
+            }
+        }
 
         BlueprintGrid(
             gridSize = 24.dp,
-            blueprintItemDataState
+            blueprintItems = blueprintItemDataState,
+            refreshKey = refreshKey
         ) {
             content { blueprintItemData ->
 
