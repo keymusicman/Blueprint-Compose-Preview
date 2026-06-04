@@ -49,6 +49,9 @@ import androidx.compose.runtime.DisposableEffect
 
 import androidx.compose.ui.platform.LocalInspectionMode
 
+import androidx.compose.ui.layout.onGloballyPositioned
+import kotlinx.coroutines.delay
+
 @Composable
 fun PassiveBlueprintPreview(
     content: @Composable () -> Unit
@@ -59,24 +62,27 @@ fun PassiveBlueprintPreview(
         }
         val view = LocalView.current
         val isInspectionMode = LocalInspectionMode.current
-
-        // In interactive mode or on device, rely on the safe PreDraw listener
+        
+        // This effect acts as a debounce/recovery mechanism.
+        // It fires whenever the view actually draws a frame.
+        // Because Android Studio's preview can suspend midway through a layout,
+        // we hook into the Android View tree to guarantee we capture the final drawn dimensions.
         DisposableEffect(view) {
-            val listener = ViewTreeObserver.OnPreDrawListener {
-                try {
-                    val newMap = extractBlueprintItemsFromSemantics(view)
-                    if (newMap.isNotEmpty() && newMap != blueprintItemDataState) {
-                        blueprintItemDataState = newMap
+            val listener = ViewTreeObserver.OnGlobalLayoutListener {
+                if (view.width > 0 && view.height > 0) {
+                    try {
+                        val newMap = extractBlueprintItemsFromSemantics(view)
+                        if (newMap.isNotEmpty() && newMap != blueprintItemDataState) {
+                            blueprintItemDataState = newMap
+                        }
+                    } catch (e: Exception) {
+                        android.util.Log.e("PassiveBlueprint", "Recovery extraction failed", e)
                     }
-                } catch (e: Exception) {
-                    android.util.Log.e("PassiveBlueprint", "PreDraw error", e)
                 }
-                true // Always draw
             }
-            view.viewTreeObserver.addOnPreDrawListener(listener)
-
+            view.viewTreeObserver.addOnGlobalLayoutListener(listener)
             onDispose {
-                view.viewTreeObserver.removeOnPreDrawListener(listener)
+                view.viewTreeObserver.removeOnGlobalLayoutListener(listener)
             }
         }
 
@@ -88,11 +94,10 @@ fun PassiveBlueprintPreview(
             try {
                 val immediateMap = extractBlueprintItemsFromSemantics(view)
                 if (immediateMap.isNotEmpty() && immediateMap != blueprintItemDataState) {
-                    // Update state synchronously during composition (safe only because it's a static preview hack)
                     blueprintItemDataState = immediateMap
                 }
             } catch (e: Exception) {
-                android.util.Log.e("PassiveBlueprint", "Inspection mode synchronous extraction failed", e)
+                // Ignore
             }
         }
 
@@ -102,7 +107,17 @@ fun PassiveBlueprintPreview(
         ) {
             // Fade the actual content so the blueprint overlay pops
             Box(
-                modifier = Modifier.alpha(0.5f)
+                modifier = Modifier
+                    .alpha(0.5f)
+                    .onGloballyPositioned { layoutCoordinates ->
+                        // Compose-native fallback recovery trigger
+                        if (layoutCoordinates.size.width > 0 && layoutCoordinates.size.height > 0) {
+                            val newMap = extractBlueprintItemsFromSemantics(view)
+                            if (newMap.isNotEmpty() && newMap != blueprintItemDataState) {
+                                blueprintItemDataState = newMap
+                            }
+                        }
+                    }
             ) {
                 content()
             }
