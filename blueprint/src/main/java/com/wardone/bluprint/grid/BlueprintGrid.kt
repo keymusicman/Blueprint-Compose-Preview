@@ -104,6 +104,8 @@ fun BlueprintGrid(
 
             val validBlueprintItems = blueprintItems.filterValues { it.size.width > 0 && it.size.height > 0 }
             val completedBlueprintLines = mutableListOf<BlueprintLine>()
+            val connectedHorizontalPairs = mutableSetOf<Set<String>>()
+            val connectedVerticalPairs = mutableSetOf<Set<String>>()
             val lineSpacingOffset = 40f // Spacing between parallel lines
 
             validBlueprintItems.forEach { currentEntry ->
@@ -115,9 +117,33 @@ fun BlueprintGrid(
 
                     val isAbove = currentEntry.value isDirectlyAbove other
 
-                    var verticalLineX = currentEntry.value.position.x + (currentEntry.value.size.width / 2)
+                    // 1. DEDUPLICATE BY ITEM PAIR: Only one vertical connection between two items
+                    val itemPair = setOf(currentEntry.value.id, other.id)
+                    if (connectedVerticalPairs.contains(itemPair)) return@lineOfSightEntries
+                    connectedVerticalPairs.add(itemPair)
+
+                    // Calculate the center of the shared X-axis overlap for better visual balance
+                    val overlapStartX = maxOf(currentEntry.value.position.x, other.position.x)
+                    val overlapEndX = minOf(currentEntry.value.position.x + currentEntry.value.size.width, other.position.x + other.size.width)
+                    val baseVerticalLineX = (overlapStartX + overlapEndX) / 2
                     
-                    // Check for overlapping paths and shift if necessary
+                    // 2. DEDUPLICATE BY LINE: Check if the base connection already exists
+                    val baseLine = BlueprintLine(
+                        start = Offset(
+                            x = baseVerticalLineX,
+                            y = currentEntry.value.position.y + if (isAbove) currentEntry.value.size.height else 0f,
+                        ),
+                        end = Offset(
+                            x = baseVerticalLineX,
+                            y = other.position.y + if (isAbove) 0f else other.size.height,
+                        )
+                    )
+                    if (completedBlueprintLines.contains(baseLine)) {
+                        return@lineOfSightEntries
+                    }
+
+                    // 2. SHIFT SECOND: If it's a new line, check for spatial overlaps and offset
+                    var verticalLineX = baseVerticalLineX
                     val overlaps = completedBlueprintLines.filter { 
                         it.isVertical && it.start.x == verticalLineX &&
                         maxOf(it.start.y, it.end.y) > minOf(currentEntry.value.position.y, other.position.y) &&
@@ -197,9 +223,33 @@ fun BlueprintGrid(
 
                     val isLeft = currentEntry.value isDirectlyLeftOf other
 
-                    var horizontalLineY = currentEntry.value.position.y + (currentEntry.value.size.height / 2)
+                    // 1. DEDUPLICATE BY ITEM PAIR
+                    val itemPair = setOf(currentEntry.value.id, other.id)
+                    if (connectedHorizontalPairs.contains(itemPair)) return@lineOfSightEntries
+                    connectedHorizontalPairs.add(itemPair)
 
-                    // Check for overlapping paths and shift if necessary
+                    // Calculate the center of the shared Y-axis overlap for better visual balance
+                    val overlapStartY = maxOf(currentEntry.value.position.y, other.position.y)
+                    val overlapEndY = minOf(currentEntry.value.position.y + currentEntry.value.size.height, other.position.y + other.size.height)
+                    val baseHorizontalLineY = (overlapStartY + overlapEndY) / 2
+
+                    // 2. DEDUPLICATE BY LINE
+                    val baseLine = BlueprintLine(
+                        start = Offset(
+                            x = currentEntry.value.position.x + if (isLeft) currentEntry.value.size.width else 0f,
+                            y = baseHorizontalLineY,
+                        ),
+                        end = Offset(
+                            x = other.position.x + if (isLeft) 0f else other.size.width,
+                            y = baseHorizontalLineY,
+                        )
+                    )
+                    if (completedBlueprintLines.contains(baseLine)) {
+                        return@lineOfSightEntries
+                    }
+
+                    // 2. SHIFT SECOND
+                    var horizontalLineY = baseHorizontalLineY
                     val overlaps = completedBlueprintLines.filter { 
                         it.isHorizontal && it.start.y == horizontalLineY &&
                         maxOf(it.start.x, it.end.x) > minOf(currentEntry.value.position.x, other.position.x) &&
