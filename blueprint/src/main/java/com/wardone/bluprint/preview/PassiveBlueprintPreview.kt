@@ -46,19 +46,20 @@ import com.wardone.bluprint.items.BlueprintItemData
 import com.wardone.bluprint.items.WherePossible
 import java.text.DecimalFormat
 
-import androidx.compose.runtime.currentCompositeKeyHash
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.runtime.currentCompositeKeyHashCode
 
 // THE SURVIVOR CACHE: IMMUNE TO LAYOUTLIB'S RE-COMPOSITION WIPES
-private var staticBlueprintCache: MutableMap<Int, Map<String, BlueprintItemData>> = mutableMapOf()
+private var staticBlueprintCache: MutableMap<Long, Map<String, BlueprintItemData>> = mutableMapOf()
 
 @Composable
 fun PassiveBlueprintPreview(
     content: @Composable () -> Unit
 ) {
     BlueprintTheme {
-        val compositeKey = currentCompositeKeyHash
+        val compositeKey = currentCompositeKeyHashCode
         // Initialize state directly from the static cache to bypass Layoutlib zoom wipes
         var blueprintItemDataState by remember {
             mutableStateOf(staticBlueprintCache[compositeKey] ?: emptyMap())
@@ -219,26 +220,59 @@ private fun PassiveBlueprintItemOverlay(itemData: BlueprintItemData) {
 
         // Draw label
         val itemSize = itemData.size
+        // Tiered scaling: reduce vertical padding first, then scale font
+        val density = LocalDensity.current
+        val itemDpHeight = density.run { itemSize.height.toDp() }
+        val itemDpWidth = density.run { itemSize.width.toDp() }
+
+        var fontSize = 12.sp
+        var vPadding = 2.dp
+        var hPadding = 2.dp
+        
+        val fullHeightNeeded = 26.dp
+        val textOnlyHeight = 18.dp
+        val fullWidthNeeded = 60.dp
+
+        // 1. Height-based scaling (Linear Progress)
+        if (itemDpHeight < fullHeightNeeded) {
+            if (itemDpHeight >= textOnlyHeight) {
+                // Stage 1: Linearly reduce padding from 2dp to 0dp
+                val progress = (itemDpHeight - textOnlyHeight) / (fullHeightNeeded - textOnlyHeight)
+                vPadding = (2 * progress).dp
+            } else {
+                // Stage 2: Padding is gone, scale font
+                vPadding = 0.dp
+                val heightScale = (itemDpHeight / textOnlyHeight).coerceAtLeast(0.4f)
+                fontSize = (12 * heightScale).sp
+                hPadding = (2 * heightScale).dp
+            }
+        }
+
+        // 2. Width-based scaling (Simple)
+        if (itemDpWidth < fullWidthNeeded) {
+            val widthScale = (itemDpWidth / fullWidthNeeded).coerceAtLeast(0.4f)
+            val currentFontValue = fontSize.value
+            val widthScaledFontValue = 12 * widthScale
+            if (widthScaledFontValue < currentFontValue) {
+                fontSize = widthScaledFontValue.sp
+                hPadding = (2 * (widthScaledFontValue / 12f)).dp
+            }
+        }
+
         if (itemSize.width > (itemSize.height * 2)) {
             Row(
                 modifier = Modifier
                     .background(SemanticColors.BlueprintBackground)
                     .border(1.dp, Color.White.copy(alpha = 0.7f))
-                    .padding(2.dp)
+                    .padding(horizontal = hPadding, vertical = vPadding)
                     .align(Alignment.Center),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 12.sp,
-                    color = Color.White,
-                    text = itemData.label,
-                )
-                Text(
-                    fontSize = 12.sp,
+                    fontSize = fontSize,
                     color = Color.White,
                     fontWeight = FontWeight.Medium,
-                    text = LocalDensity.current.run {
+                    text = density.run {
                         val width = decimalFormat.format(itemSize.width.toDp().value)
                         val height = decimalFormat.format(itemSize.height.toDp().value)
                         "${width}x${height}"
@@ -250,21 +284,15 @@ private fun PassiveBlueprintItemOverlay(itemData: BlueprintItemData) {
                 modifier = Modifier
                     .background(SemanticColors.BlueprintBackground)
                     .border(1.dp, Color.White.copy(alpha = 0.7f))
-                    .padding(2.dp)
+                    .padding(horizontal = hPadding, vertical = vPadding)
                     .align(Alignment.Center),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 12.sp,
-                    color = Color.White,
-                    text = itemData.label,
-                )
-                Text(
-                    fontSize = 12.sp,
+                    fontSize = fontSize,
                     color = Color.White,
                     fontWeight = FontWeight.Medium,
-                    text = LocalDensity.current.run {
+                    text = density.run {
                         val width = decimalFormat.format(itemSize.width.toDp().value)
                         val height = decimalFormat.format(itemSize.height.toDp().value)
                         "${width}x${height}"
@@ -288,8 +316,12 @@ private fun findAndroidComposeView(view: View): View? {
     return null
 }
 
+// A thread-local or temporary set to track nodes that should be ignored in the current traversal
+private val suppressedNodes = mutableSetOf<Int>()
+
 fun extractBlueprintItemsFromSemantics(view: View): Map<String, BlueprintItemData> {
     val items = mutableMapOf<String, BlueprintItemData>()
+    suppressedNodes.clear() 
 
     var composeView: ViewRootForTest? = null
     var currentView: View? = view
@@ -351,35 +383,61 @@ fun extractBlueprintItemsFromSemantics(view: View): Map<String, BlueprintItemDat
 fun traverseSemanticsNode(node: androidx.compose.ui.semantics.SemanticsNode, items: MutableMap<String, BlueprintItemData>) {
     try {
         val id = node.id
-        val bounds = node.boundsInRoot
+        
+        // Use layoutInfo to get TRUE physical bounds.
+        // We attempt to get the outermost coordinates (including padding/background modifiers)
+        // by reading the outerCoordinator via reflection, falling back to inner coordinates.
+        val layoutInfo = node.layoutInfo
+        val outerCoordinates = try {
+            val getModifierInfoMethod = layoutInfo.javaClass.getMethod("getModifierInfo")
+            getModifierInfoMethod.isAccessible = true
+            val modifierInfoList = getModifierInfoMethod.invoke(layoutInfo) as List<*>
+            if (modifierInfoList.isNotEmpty()) {
+                val firstModInfo = modifierInfoList.first()!!
+                val coordsMethod = firstModInfo.javaClass.getMethod("getCoordinates")
+                coordsMethod.invoke(firstModInfo) as androidx.compose.ui.layout.LayoutCoordinates
+            } else {
+                val outerCoordMethod = layoutInfo.javaClass.getMethod("getOuterCoordinator")
+                outerCoordMethod.isAccessible = true
+                outerCoordMethod.invoke(layoutInfo) as androidx.compose.ui.layout.LayoutCoordinates
+            }
+        } catch (e: Exception) {
+            try {
+                val outerCoordMethod = layoutInfo.javaClass.getMethod("getOuterCoordinator")
+                outerCoordMethod.isAccessible = true
+                outerCoordMethod.invoke(layoutInfo) as androidx.compose.ui.layout.LayoutCoordinates
+            } catch (e2: Exception) {
+                layoutInfo.coordinates
+            }
+        }
+        
+        val bounds = outerCoordinates.boundsInRoot()
 
         var label = "Node $id"
         var hasExplicitLabel = false
         
         val config = node.config
-        
-        // Priority 1: TestTag (includes blueprintId)
+
+        // Priority 1: TestTag (includes blueprintId) - Developers use this for explicit naming
         val testTag = config.getOrNull(SemanticsProperties.TestTag)
         if (testTag != null) {
             if (testTag == "blueprint_fallback_text" || testTag == "blueprint_internal_overlay") {
-                return // PRUNE THE SUBTREE: Skip our own internal UI completely
-            } else {
-                label = testTag
-                hasExplicitLabel = true
+                return // PRUNE THE SUBTREE
             }
+            label = testTag
+            hasExplicitLabel = true
         }
 
-        // Priority 2: Text content
+        // Priority 2: Text content - Fallback for untagged items
         if (!hasExplicitLabel) {
             val textList = config.getOrNull(SemanticsProperties.Text)
             if (!textList.isNullOrEmpty()) {
                 label = textList.joinToString(", ")
-                // CRITICAL: We MUST NOT detect our own label boxes if they were somehow missed by the tag prune
-                if (label == "Assemble to see Blueprint") return
+                if (label == "Assemble to see Blueprint") return // Ignore our own UI
                 hasExplicitLabel = true
             }
         }
-        
+
         // Priority 3: Content Description
         if (!hasExplicitLabel) {
             val contentDescription = config.getOrNull(SemanticsProperties.ContentDescription)
@@ -389,8 +447,24 @@ fun traverseSemanticsNode(node: androidx.compose.ui.semantics.SemanticsNode, ite
             }
         }
 
-        // Only include nodes with explicit labels and reasonable size to filter noise
-        if (hasExplicitLabel && bounds.width > 2f && bounds.height > 2f && !node.isRoot) {
+        // --- ID PREFERENCE & REDUNDANCY FILTER ---
+        // If this node has a label AND it's a layout (not a Leaf node),
+        // we check for a single labeled child to "absorb" to prevent double blueprints.
+        if (hasExplicitLabel && node.children.isNotEmpty()) {
+            val labeledChildren = node.children.filter { child ->
+                val childConfig = child.config
+                childConfig.contains(SemanticsProperties.TestTag) ||
+                !childConfig.getOrNull(SemanticsProperties.Text).isNullOrEmpty() ||
+                !childConfig.getOrNull(SemanticsProperties.ContentDescription).isNullOrEmpty()
+            }
+
+            if (labeledChildren.size == 1) {
+                val childToSuppress = labeledChildren.first()
+                suppressedNodes.add(childToSuppress.id)
+            }
+        }
+
+        if (hasExplicitLabel && !suppressedNodes.contains(id) && bounds.width > 2f && bounds.height > 2f && !node.isRoot) {
             items[id.toString()] = BlueprintItemData(
                 id = id.toString(),
                 label = label,

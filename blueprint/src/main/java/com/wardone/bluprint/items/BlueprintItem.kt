@@ -122,23 +122,64 @@ fun BlueprintItem(
                 } while (start < size.width + size.height)
             }
         }
+        
+        // Tiered scaling: reduce vertical padding first, then scale font
+        val density = LocalDensity.current
+        val itemDpHeight = density.run { itemSize.height.toDp() }
+        val itemDpWidth = density.run { itemSize.width.toDp() }
+
+        var fontSize = 12.sp
+        var vPadding = 2.dp
+        var hPadding = 2.dp
+        
+        // Thresholds are higher for active items because they have 2 lines of text (label + dimensions)
+        val fullHeightNeeded = 48.dp
+        val textOnlyHeight = 36.dp
+        val fullWidthNeeded = 80.dp
+
+        // 1. Height-based scaling (Linear Progress)
+        if (itemDpHeight < fullHeightNeeded) {
+            if (itemDpHeight >= textOnlyHeight) {
+                // Stage 1: Linearly reduce padding from 2dp to 0dp
+                val progress = (itemDpHeight - textOnlyHeight) / (fullHeightNeeded - textOnlyHeight)
+                vPadding = (2 * progress).dp
+            } else {
+                // Stage 2: Vertical padding is gone, scale font
+                vPadding = 0.dp
+                val heightScale = (itemDpHeight / textOnlyHeight).coerceAtLeast(0.4f)
+                fontSize = (12 * heightScale).sp
+                hPadding = (2 * heightScale).dp
+            }
+        }
+
+        // 2. Width-based scaling (Simple)
+        if (itemDpWidth < fullWidthNeeded) {
+            val widthScale = (itemDpWidth / fullWidthNeeded).coerceAtLeast(0.4f)
+            val currentFontValue = fontSize.value
+            val widthScaledFontValue = 12 * widthScale
+            if (widthScaledFontValue < currentFontValue) {
+                fontSize = widthScaledFontValue.sp
+                hPadding = (2 * (widthScaledFontValue / 12f)).dp
+            }
+        }
+
         if (itemSize.width > (itemSize.height * 2)) {
             Row(
                 modifier = Modifier
                     .background(SemanticColors.BlueprintBackground)
                     .border(1.dp, Color.White.copy(alpha = 0.7f))
-                    .padding(2.dp),
+                    .padding(horizontal = hPadding, vertical = vPadding),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
                     fontWeight = FontWeight.Medium,
-                    fontSize = 12.sp,
+                    fontSize = fontSize,
                     text = label,
                 )
                 Text(
-                    fontSize = 12.sp,
+                    fontSize = fontSize,
                     fontWeight = FontWeight.Medium,
-                    text = LocalDensity.current.run {
+                    text = density.run {
                         val width = decimalFormat.format(itemSize.width.toDp().value)
                         val height = decimalFormat.format(itemSize.height.toDp().value)
                         "${width}x${height}"
@@ -150,19 +191,19 @@ fun BlueprintItem(
                 modifier = Modifier
                     .background(MaterialTheme.colorScheme.background)
                     .border(1.dp, Color.White.copy(alpha = 0.7f))
-                    .padding(2.dp),
+                    .padding(horizontal = hPadding, vertical = vPadding),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
                     fontWeight = FontWeight.Medium,
-                    fontSize = 12.sp,
+                    fontSize = fontSize,
 
                     text = label,
                 )
                 Text(
-                    fontSize = 12.sp,
+                    fontSize = fontSize,
                     fontWeight = FontWeight.Medium,
-                    text = LocalDensity.current.run {
+                    text = density.run {
                         val width = decimalFormat.format(itemSize.width.toDp().value)
                         val height = decimalFormat.format(itemSize.height.toDp().value)
                         "${width}x${height}"

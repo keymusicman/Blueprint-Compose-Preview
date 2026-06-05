@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -59,7 +60,7 @@ fun ExampleComponent(
             title()
         }
         Box(
-            modifier = Modifier.height(80.dp).blueprintId("t")
+            modifier = Modifier.height(80.dp)
         ) {
             body()
         }
@@ -143,6 +144,7 @@ fun ExampleComponentStandardPreview() {
             action = {
                 IconButton(
                     modifier = Modifier
+                        .blueprintId("2")
                         .shadow(
                             elevation = 8.dp,
                             shape = CircleShape

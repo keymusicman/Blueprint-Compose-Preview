@@ -8,7 +8,9 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.LineHeightStyle
 import com.wardone.bluprint.constants.SemanticColors
 
 @Composable
@@ -17,7 +19,7 @@ fun BlueprintTheme(
 ) {
     MaterialTheme(
         colorScheme = lightColorScheme(
-            background = Color.Transparent,
+            background = SemanticColors.BlueprintBackground,
             onBackground = SemanticColors.BlueprintAccent,
         ),
         content = {
@@ -25,7 +27,16 @@ fun BlueprintTheme(
                 modifier = Modifier.background(SemanticColors.BlueprintBackground)
             ) {
                 ProvideTextStyle(
-                    value = TextStyle(SemanticColors.BlueprintAccent)
+                    value = TextStyle(
+                        color = SemanticColors.BlueprintAccent,
+                        platformStyle = PlatformTextStyle(
+                            includeFontPadding = false
+                        ),
+                        lineHeightStyle = LineHeightStyle(
+                            alignment = LineHeightStyle.Alignment.Center,
+                            trim = LineHeightStyle.Trim.Both
+                        )
+                    )
                 ) {
                     content()
                 }
