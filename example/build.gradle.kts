@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.wardone.example"
+    namespace = "uk.co.gusward.example"
     compileSdk = 37
 
     defaultConfig {

@@ -1,10 +1,14 @@
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.plugin.compose")
+    id("maven-publish")
 }
 
+group = "uk.co.gusward"
+version = "1.0.0"
+
 android {
-    namespace = "com.wardone.blueprint"
+    namespace = "uk.co.gusward.blueprint"
     compileSdk = 37
 
     defaultConfig {
@@ -29,6 +33,27 @@ android {
     }
     buildFeatures {
         compose = true
+    }
+
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+            withJavadocJar()
+        }
+    }
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("release") {
+            groupId = "uk.co.gusward"
+            artifactId = "blueprint"
+            version = "1.0.0"
+
+            afterEvaluate {
+                from(components["release"])
+            }
+        }
     }
 }
 

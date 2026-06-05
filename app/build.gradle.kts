@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.wardone.blueprint.app"
+    namespace = "uk.co.gusward.blueprint.app"
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "com.wardone.blueprint.app"
+        applicationId = "uk.co.gusward.blueprint.app"
         minSdk = 28
         targetSdk = 37
         versionCode = 1
