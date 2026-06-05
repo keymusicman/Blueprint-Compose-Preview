@@ -34,6 +34,8 @@ import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.ViewRootForTest
 import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.getOrNull
+import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -44,17 +46,22 @@ import com.wardone.bluprint.items.BlueprintItemData
 import com.wardone.bluprint.items.WherePossible
 import java.text.DecimalFormat
 
+import androidx.compose.runtime.currentCompositeKeyHash
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTag
+
 // THE SURVIVOR CACHE: IMMUNE TO LAYOUTLIB'S RE-COMPOSITION WIPES
-private var staticBlueprintCache: Map<String, BlueprintItemData> = emptyMap()
+private var staticBlueprintCache: MutableMap<Int, Map<String, BlueprintItemData>> = mutableMapOf()
 
 @Composable
 fun PassiveBlueprintPreview(
     content: @Composable () -> Unit
 ) {
     BlueprintTheme {
+        val compositeKey = currentCompositeKeyHash
         // Initialize state directly from the static cache to bypass Layoutlib zoom wipes
         var blueprintItemDataState by remember {
-            mutableStateOf(staticBlueprintCache)
+            mutableStateOf(staticBlueprintCache[compositeKey] ?: emptyMap())
         }
         val view = LocalView.current
         val isInspectionMode = LocalInspectionMode.current
@@ -67,7 +74,7 @@ fun PassiveBlueprintPreview(
                         val newMap = extractBlueprintItemsFromSemantics(view)
                         if (newMap.isNotEmpty() && newMap != blueprintItemDataState) {
                             blueprintItemDataState = newMap
-                            staticBlueprintCache = newMap // Anchor to cache
+                            staticBlueprintCache[compositeKey] = newMap // Anchor to cache
                         }
                     } catch (e: Exception) {
                         android.util.Log.e("PassiveBlueprint", "Recovery extraction failed", e)
@@ -86,76 +93,85 @@ fun PassiveBlueprintPreview(
                 val immediateMap = extractBlueprintItemsFromSemantics(view)
                 if (immediateMap.isNotEmpty() && immediateMap != blueprintItemDataState) {
                     blueprintItemDataState = immediateMap
-                    staticBlueprintCache = immediateMap // Anchor to cache
+                    staticBlueprintCache[compositeKey] = immediateMap // Anchor to cache
                 }
             } catch (e: Exception) {
                 // Ignore
             }
         }
 
-        BlueprintGrid(
-            gridSize = 24.dp,
-            blueprintItems = blueprintItemDataState
-        ) {
-            // Fade the actual content so the blueprint overlay pops
-            Box(
-                modifier = Modifier
-                    .alpha(0.5f)
-                    .onGloballyPositioned { layoutCoordinates ->
-                        // Compose-native fallback recovery trigger
-                        if (layoutCoordinates.size.width > 0 && layoutCoordinates.size.height > 0) {
-                            val newMap = extractBlueprintItemsFromSemantics(view)
-                            if (newMap.isNotEmpty() && newMap != blueprintItemDataState) {
-                                blueprintItemDataState = newMap
-                                staticBlueprintCache = newMap // Anchor to cache
-                            }
+        // Reset cache if we're in diagnostic mode or just to be safe during these changes
+        // staticBlueprintCache.clear() 
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .onGloballyPositioned { layoutCoordinates ->
+                    if (layoutCoordinates.size.width > 0 && layoutCoordinates.size.height > 0) {
+                        val newMap = extractBlueprintItemsFromSemantics(view)
+                        if (newMap.isNotEmpty() && newMap != blueprintItemDataState) {
+                            blueprintItemDataState = newMap
+                            staticBlueprintCache[compositeKey] = newMap
                         }
                     }
+                }
+        ) {
+            // 1. Draw the actual content first, faded
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .alpha(0.5f)
             ) {
                 content()
             }
 
-            // GRACEFUL DEGRADATION & RECOVERY:
-            if (blueprintItemDataState.isEmpty()) {
-                DisposableEffect(view) {
-                    val listener = ViewTreeObserver.OnPreDrawListener {
-                        try {
-                            val recoveredMap = extractBlueprintItemsFromSemantics(view)
-                            if (recoveredMap.isNotEmpty() && recoveredMap != blueprintItemDataState) {
-                                blueprintItemDataState = recoveredMap
-                                staticBlueprintCache = recoveredMap // Anchor to cache
-                            }
-                        } catch (e: Exception) {
-                            // Ignore during aggressive polling
+            // 2. Draw the Blueprint Grid and Overlay on top
+            BlueprintGrid(
+                gridSize = 24.dp,
+                blueprintItems = blueprintItemDataState
+            ) {
+                if (blueprintItemDataState.isEmpty()) {
+                    // Fallback state...
+                    DisposableEffect(view) {
+                        val listener = ViewTreeObserver.OnPreDrawListener {
+                            try {
+                                val recoveredMap = extractBlueprintItemsFromSemantics(view)
+                                if (recoveredMap.isNotEmpty() && recoveredMap != blueprintItemDataState) {
+                                    blueprintItemDataState = recoveredMap
+                                    staticBlueprintCache[compositeKey] = recoveredMap
+                                }
+                            } catch (e: Exception) {}
+                            true
                         }
-                        true // continue drawing
+                        view.viewTreeObserver.addOnPreDrawListener(listener)
+                        onDispose { view.viewTreeObserver.removeOnPreDrawListener(listener) }
                     }
-                    view.viewTreeObserver.addOnPreDrawListener(listener)
-                    onDispose {
-                        view.viewTreeObserver.removeOnPreDrawListener(listener)
-                    }
-                }
 
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "Assemble to see Blueprint",
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold,
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Assemble to see Blueprint",
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier
+                                .semantics { testTag = "blueprint_fallback_text" }
+                                .background(SemanticColors.BlueprintBackground.copy(alpha = 0.8f))
+                                .border(1.dp, Color.White)
+                                .padding(16.dp)
+                        )
+                    }
+                } else {
+                    // Draw the visual boxes
+                    Box(
                         modifier = Modifier
-                            .background(SemanticColors.BlueprintBackground.copy(alpha = 0.8f))
-                            .border(1.dp, Color.White)
-                            .padding(16.dp)
-                    )
-                }
-            } else {
-                // Draw the visual boxes over the passively detected nodes inside a Box
-                // that fills the parent, preventing clipping during zoom
-                Box(modifier = Modifier.fillMaxSize()) {
-                    blueprintItemDataState.values.forEach { item ->
-                        PassiveBlueprintItemOverlay(item)
+                            .fillMaxSize()
+                            .semantics { testTag = "blueprint_internal_overlay" }
+                    ) {
+                        blueprintItemDataState.values.forEach { item ->
+                            PassiveBlueprintItemOverlay(item)
+                        }
                     }
                 }
             }
@@ -288,7 +304,14 @@ fun extractBlueprintItemsFromSemantics(view: View): Map<String, BlueprintItemDat
     if (composeView != null) {
         try {
             val semanticsOwner = composeView.semanticsOwner
-            val rootNode = semanticsOwner.rootSemanticsNode
+            // Prefer unmerged tree to see all blueprint items
+            val rootNode = try {
+                val unmergedProperty = semanticsOwner.javaClass.getDeclaredMethod("getUnmergedRootSemanticsNode")
+                unmergedProperty.isAccessible = true
+                unmergedProperty.invoke(semanticsOwner) as androidx.compose.ui.semantics.SemanticsNode
+            } catch (e: Exception) {
+                semanticsOwner.rootSemanticsNode
+            }
             traverseSemanticsNode(rootNode, items)
             return items
         } catch (e: Exception) {
@@ -304,9 +327,15 @@ fun extractBlueprintItemsFromSemantics(view: View): Map<String, BlueprintItemDat
                 val semanticsOwner = semanticsOwnerField.invoke(androidComposeView)
 
                 if (semanticsOwner != null) {
-                    val rootSemanticsNodeMethod = semanticsOwner.javaClass.getDeclaredMethod("getRootSemanticsNode")
-                    rootSemanticsNodeMethod.isAccessible = true
-                    val rootNode = rootSemanticsNodeMethod.invoke(semanticsOwner) as androidx.compose.ui.semantics.SemanticsNode
+                    val rootNode = try {
+                        val unmergedProperty = semanticsOwner.javaClass.getDeclaredMethod("getUnmergedRootSemanticsNode")
+                        unmergedProperty.isAccessible = true
+                        unmergedProperty.invoke(semanticsOwner) as androidx.compose.ui.semantics.SemanticsNode
+                    } catch (e: Exception) {
+                        val rootSemanticsNodeMethod = semanticsOwner.javaClass.getDeclaredMethod("getRootSemanticsNode")
+                        rootSemanticsNodeMethod.isAccessible = true
+                        rootSemanticsNodeMethod.invoke(semanticsOwner) as androidx.compose.ui.semantics.SemanticsNode
+                    }
                     traverseSemanticsNode(rootNode, items)
                 }
             } else {
@@ -326,29 +355,42 @@ fun traverseSemanticsNode(node: androidx.compose.ui.semantics.SemanticsNode, ite
 
         var label = "Node $id"
         var hasExplicitLabel = false
-        try {
-            val config = node.config
-            val configString = config.toString()
-
-            val testTagMatch = Regex("TestTag\\s*[:=]\\s*'([^']+)'").find(configString)
-            val textMatch = Regex("Text\\s*[:=]\\s*\\[([^\\]]+)\\]").find(configString)
-            val contentDescMatch = Regex("ContentDescription\\s*[:=]\\s*\\[([^\\]]+)\\]").find(configString)
-
-            if (testTagMatch != null) {
-                label = testTagMatch.groupValues[1]
-                hasExplicitLabel = true
-            } else if (textMatch != null) {
-                label = textMatch.groupValues[1]
-                hasExplicitLabel = true
-            } else if (contentDescMatch != null) {
-                label = contentDescMatch.groupValues[1]
+        
+        val config = node.config
+        
+        // Priority 1: TestTag (includes blueprintId)
+        val testTag = config.getOrNull(SemanticsProperties.TestTag)
+        if (testTag != null) {
+            if (testTag == "blueprint_fallback_text" || testTag == "blueprint_internal_overlay") {
+                return // PRUNE THE SUBTREE: Skip our own internal UI completely
+            } else {
+                label = testTag
                 hasExplicitLabel = true
             }
-        } catch (e: Exception) {
-            // Ignore config parsing errors
         }
 
-        if (hasExplicitLabel && bounds.width > 0 && bounds.height > 0 && !node.isRoot) {
+        // Priority 2: Text content
+        if (!hasExplicitLabel) {
+            val textList = config.getOrNull(SemanticsProperties.Text)
+            if (!textList.isNullOrEmpty()) {
+                label = textList.joinToString(", ")
+                // CRITICAL: We MUST NOT detect our own label boxes if they were somehow missed by the tag prune
+                if (label == "Assemble to see Blueprint") return
+                hasExplicitLabel = true
+            }
+        }
+        
+        // Priority 3: Content Description
+        if (!hasExplicitLabel) {
+            val contentDescription = config.getOrNull(SemanticsProperties.ContentDescription)
+            if (!contentDescription.isNullOrEmpty()) {
+                label = contentDescription.joinToString(", ")
+                hasExplicitLabel = true
+            }
+        }
+
+        // Only include nodes with explicit labels and reasonable size to filter noise
+        if (hasExplicitLabel && bounds.width > 2f && bounds.height > 2f && !node.isRoot) {
             items[id.toString()] = BlueprintItemData(
                 id = id.toString(),
                 label = label,
@@ -358,6 +400,7 @@ fun traverseSemanticsNode(node: androidx.compose.ui.semantics.SemanticsNode, ite
             )
         }
 
+        // ALWAYS traverse children
         val children = node.children
         for (child in children) {
             traverseSemanticsNode(child, items)

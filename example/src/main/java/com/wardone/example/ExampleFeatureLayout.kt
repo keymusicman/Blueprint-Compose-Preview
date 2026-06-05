@@ -18,6 +18,7 @@ import com.wardone.bluprint.items.None
 import com.wardone.bluprint.items.Specific
 import com.wardone.bluprint.preview.BlueprintPreview
 import com.wardone.bluprint.preview.PassiveBlueprintPreview
+import com.wardone.bluprint.preview.blueprintId
 
 @Composable
 fun ExampleFeatureLayout(
@@ -38,6 +39,7 @@ fun ExampleFeatureLayout(
             modifier = Modifier.constrainAs(headerRef) {
                 top.linkTo(parent.top)
                 start.linkTo(parent.start)
+                end.linkTo(parent.end)
             }
         ) {
             Row(
@@ -52,7 +54,6 @@ fun ExampleFeatureLayout(
         Box(
             modifier = Modifier.constrainAs(bodyRef) {
                 top.linkTo(headerRef.bottom, 20.dp)
-                bottom.linkTo(parent.bottom)
                 start.linkTo(parent.start)
                 end.linkTo(parent.end)
             }
@@ -122,12 +123,13 @@ fun ExampleFeatureLayoutActiveBlueprintPreview() {
 
 @Preview
 @Composable
-fun ExampleFeatureLayoutActivePassivePreview() {
+fun ExampleFeatureLayoutPassivePreview() {
     PassiveBlueprintPreview {
         ExampleFeatureLayout(
             hero = {
                 Box(
                     modifier = Modifier
+                        .blueprintId("Hero")
                         .width(80.dp)
                         .height(80.dp),
                 )
@@ -135,6 +137,7 @@ fun ExampleFeatureLayoutActivePassivePreview() {
             header = {
                 Box(
                     modifier = Modifier
+                        .blueprintId("Header")
                         .width(144.dp)
                         .height(48.dp),
                 )
@@ -142,6 +145,7 @@ fun ExampleFeatureLayoutActivePassivePreview() {
             body = {
                 Box(
                     modifier = Modifier
+                        .blueprintId("Body")
                         .fillMaxWidth()
                         .height(288.dp),
                 )
@@ -149,6 +153,7 @@ fun ExampleFeatureLayoutActivePassivePreview() {
             footer = {
                 Box(
                     modifier = Modifier
+                        .blueprintId("Footer")
                         .fillMaxWidth()
                         .height(50.dp),
                 )
