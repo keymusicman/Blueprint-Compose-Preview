@@ -103,10 +103,10 @@ fun BlueprintGrid(
         ) {
 
             val validBlueprintItems = blueprintItems.filterValues { it.size.width > 0 && it.size.height > 0 }
+            val completedBlueprintLines = mutableListOf<BlueprintLine>()
+            val lineSpacingOffset = 40f // Spacing between parallel lines
 
             validBlueprintItems.forEach { currentEntry ->
-
-                val completedBlueprintLines = mutableListOf<BlueprintLine>()
 
                 /* draw VERTICAL connecting lines where there is direct line of sight */
                 validBlueprintItems.values.filter { other ->
@@ -115,26 +115,31 @@ fun BlueprintGrid(
 
                     val isAbove = currentEntry.value isDirectlyAbove other
 
+                    var verticalLineX = currentEntry.value.position.x + (currentEntry.value.size.width / 2)
+                    
+                    // Check for overlapping paths and shift if necessary
+                    val overlaps = completedBlueprintLines.filter { 
+                        it.isVertical && it.start.x == verticalLineX &&
+                        maxOf(it.start.y, it.end.y) > minOf(currentEntry.value.position.y, other.position.y) &&
+                        minOf(it.start.y, it.end.y) < maxOf(currentEntry.value.position.y, other.position.y)
+                    }
+                    
+                    if (overlaps.isNotEmpty()) {
+                        verticalLineX += (overlaps.size * lineSpacingOffset)
+                    }
+
                     val blueprintLine = BlueprintLine(
                         start = Offset(
-                            x = currentEntry.value.position.x + (currentEntry.value.size.width / 2),
+                            x = verticalLineX,
                             y = currentEntry.value.position.y
                                     + if (isAbove) currentEntry.value.size.height else 0f,
                         ),
                         end = Offset(
-                            x = currentEntry.value.position.x + (currentEntry.value.size.width / 2),
+                            x = verticalLineX,
                             y = other.position.y
                                     + if (isAbove) 0f else other.size.height,
                         )
                     )
-
-                    val intersectsAnyOtherLine = completedBlueprintLines.any {
-                        it.intersects(blueprintLine)
-                    }
-
-                    if (intersectsAnyOtherLine) {
-                        return@lineOfSightEntries
-                    }
 
                     val intersectsAnyBlueprintItem = validBlueprintItems
                         .filter {
@@ -192,26 +197,31 @@ fun BlueprintGrid(
 
                     val isLeft = currentEntry.value isDirectlyLeftOf other
 
-                        val blueprintLine = BlueprintLine(
-                            start = Offset(
-                                x = currentEntry.value.position.x
-                                        + if (isLeft) currentEntry.value.size.width else 0f,
-                                y = currentEntry.value.position.y + (currentEntry.value.size.height / 2),
-                            ),
-                            end = Offset(
-                                x = other.position.x
-                                        + if (isLeft) 0f else  + other.size.width,
-                                y = currentEntry.value.position.y + (currentEntry.value.size.height / 2),
-                            )
+                    var horizontalLineY = currentEntry.value.position.y + (currentEntry.value.size.height / 2)
+
+                    // Check for overlapping paths and shift if necessary
+                    val overlaps = completedBlueprintLines.filter { 
+                        it.isHorizontal && it.start.y == horizontalLineY &&
+                        maxOf(it.start.x, it.end.x) > minOf(currentEntry.value.position.x, other.position.x) &&
+                        minOf(it.start.x, it.end.x) < maxOf(currentEntry.value.position.x, other.position.x)
+                    }
+                    
+                    if (overlaps.isNotEmpty()) {
+                        horizontalLineY += (overlaps.size * lineSpacingOffset)
+                    }
+
+                    val blueprintLine = BlueprintLine(
+                        start = Offset(
+                            x = currentEntry.value.position.x
+                                    + if (isLeft) currentEntry.value.size.width else 0f,
+                            y = horizontalLineY,
+                        ),
+                        end = Offset(
+                            x = other.position.x
+                                    + if (isLeft) 0f else  + other.size.width,
+                            y = horizontalLineY,
                         )
-
-                    val intersectsAnyOtherLine = completedBlueprintLines.any {
-                        it.intersects(blueprintLine)
-                    }
-
-                    if (intersectsAnyOtherLine) {
-                        return@lineOfSightEntries
-                    }
+                    )
 
                     val intersectsAnyBlueprintItem = validBlueprintItems
                         .filter {
@@ -270,31 +280,37 @@ fun BlueprintGrid(
 
                 if (parentDirectLeft) {
 
+                    var horizontalLineY = currentEntry.value.position.y + (currentEntry.value.size.height / 2)
+
+                    // Check for overlaps with already drawn lines
+                    val overlaps = completedBlueprintLines.filter { 
+                        it.isHorizontal && it.start.y == horizontalLineY &&
+                        maxOf(it.start.x, it.end.x) > minOf(0f, currentEntry.value.position.x) &&
+                        minOf(it.start.x, it.end.x) < maxOf(0f, currentEntry.value.position.x)
+                    }
+                    
+                    if (overlaps.isNotEmpty()) {
+                        horizontalLineY += (overlaps.size * lineSpacingOffset)
+                    }
+
                     val blueprintLine = BlueprintLine(
                         start = Offset(
                             x = currentEntry.value.position.x,
-                            y = currentEntry.value.position.y + (currentEntry.value.size.height / 2),
+                            y = horizontalLineY,
                         ),
                         end = Offset(
                             x = 0f,
-                            y = currentEntry.value.position.y + (currentEntry.value.size.height / 2),
+                            y = horizontalLineY,
                         )
                     )
 
-                    val intersectsAnyOtherLine = completedBlueprintLines.any {
-                        it.intersects(blueprintLine)
-                    }
+                    val intersectsAnyBlueprintItem = validBlueprintItems
+                        .filter { it.value != currentEntry.value }
+                        .any { blueprintLine.intersects(it.value) }
 
-                    if (!intersectsAnyOtherLine) {
+                    if (!intersectsAnyBlueprintItem) {
 
                         val width = min(measuredLineWidth, blueprintLine.length * minimumScale)
-
-                        drawLine(
-                            start = blueprintLine.start,
-                            end = blueprintLine.end,
-                            color = Color.White,
-                            strokeWidth = width,
-                        )
 
                         drawLine(
                             start = blueprintLine.start,
@@ -338,22 +354,35 @@ fun BlueprintGrid(
 
                 if (parentDirectTop) {
 
+                    var verticalLineX = currentEntry.value.position.x + (currentEntry.value.size.width / 2)
+
+                    // Check for overlaps
+                    val overlaps = completedBlueprintLines.filter { 
+                        it.isVertical && it.start.x == verticalLineX &&
+                        maxOf(it.start.y, it.end.y) > minOf(0f, currentEntry.value.position.y) &&
+                        minOf(it.start.y, it.end.y) < maxOf(0f, currentEntry.value.position.y)
+                    }
+                    
+                    if (overlaps.isNotEmpty()) {
+                        verticalLineX += (overlaps.size * lineSpacingOffset)
+                    }
+
                     val blueprintLine = BlueprintLine(
                         start = Offset(
-                            x = currentEntry.value.position.x + (currentEntry.value.size.width / 2),
+                            x = verticalLineX,
                             y = currentEntry.value.position.y,
                         ),
                         end = Offset(
-                            x = currentEntry.value.position.x + (currentEntry.value.size.width / 2),
+                            x = verticalLineX,
                             y = 0f,
                         )
                     )
 
-                    val intersectsAnyOtherLine = completedBlueprintLines.any {
-                        it.intersects(blueprintLine)
-                    }
+                    val intersectsAnyBlueprintItem = validBlueprintItems
+                        .filter { it.value != currentEntry.value }
+                        .any { blueprintLine.intersects(it.value) }
 
-                    if (!intersectsAnyOtherLine) {
+                    if (!intersectsAnyBlueprintItem) {
 
                         val width = min(measuredLineWidth, blueprintLine.length * minimumScale)
 
@@ -399,22 +428,35 @@ fun BlueprintGrid(
 
                 if (parentDirectRight) {
 
+                    var horizontalLineY = currentEntry.value.position.y + (currentEntry.value.size.height / 2)
+
+                    // Check for overlaps
+                    val overlaps = completedBlueprintLines.filter { 
+                        it.isHorizontal && it.start.y == horizontalLineY &&
+                        maxOf(it.start.x, it.end.x) > minOf(currentEntry.value.position.x + currentEntry.value.size.width, screenSize.width) &&
+                        minOf(it.start.x, it.end.x) < maxOf(currentEntry.value.position.x + currentEntry.value.size.width, screenSize.width)
+                    }
+                    
+                    if (overlaps.isNotEmpty()) {
+                        horizontalLineY += (overlaps.size * lineSpacingOffset)
+                    }
+
                     val blueprintLine = BlueprintLine(
                         start = Offset(
                             x = currentEntry.value.position.x + currentEntry.value.size.width,
-                            y = currentEntry.value.position.y + (currentEntry.value.size.height / 2),
+                            y = horizontalLineY,
                         ),
                         end = Offset(
                             x = screenSize.width,
-                            y = currentEntry.value.position.y + (currentEntry.value.size.height / 2),
+                            y = horizontalLineY,
                         )
                     )
 
-                    val intersectsAnyOtherLine = completedBlueprintLines.any {
-                        it.intersects(blueprintLine)
-                    }
+                    val intersectsAnyBlueprintItem = validBlueprintItems
+                        .filter { it.value != currentEntry.value }
+                        .any { blueprintLine.intersects(it.value) }
 
-                    if (!intersectsAnyOtherLine) {
+                    if (!intersectsAnyBlueprintItem) {
 
                         val width = min(measuredLineWidth, blueprintLine.length * minimumScale)
 
@@ -460,22 +502,35 @@ fun BlueprintGrid(
 
                 if (parentDirectBottom) {
 
+                    var verticalLineX = currentEntry.value.position.x + currentEntry.value.size.width / 2
+
+                    // Check for overlaps
+                    val overlaps = completedBlueprintLines.filter { 
+                        it.isVertical && it.start.x == verticalLineX &&
+                        maxOf(it.start.y, it.end.y) > minOf(currentEntry.value.position.y + currentEntry.value.size.height, screenSize.height) &&
+                        minOf(it.start.y, it.end.y) < maxOf(currentEntry.value.position.y + currentEntry.value.size.height, screenSize.height)
+                    }
+                    
+                    if (overlaps.isNotEmpty()) {
+                        verticalLineX += (overlaps.size * lineSpacingOffset)
+                    }
+
                     val blueprintLine = BlueprintLine(
                         start = Offset(
-                            x = currentEntry.value.position.x + currentEntry.value.size.width / 2,
+                            x = verticalLineX,
                             y = currentEntry.value.position.y + currentEntry.value.size.height,
                         ),
                         end = Offset(
-                            x = currentEntry.value.position.x + currentEntry.value.size.width / 2,
+                            x = verticalLineX,
                             y = screenSize.height,
                         )
                     )
 
-                    val intersectsAnyOtherLine = completedBlueprintLines.any {
-                        it.intersects(blueprintLine)
-                    }
+                    val intersectsAnyBlueprintItem = validBlueprintItems
+                        .filter { it.value != currentEntry.value }
+                        .any { blueprintLine.intersects(it.value) }
 
-                    if (!intersectsAnyOtherLine) {
+                    if (!intersectsAnyBlueprintItem) {
 
                         val width = min(measuredLineWidth, blueprintLine.length * minimumScale)
 

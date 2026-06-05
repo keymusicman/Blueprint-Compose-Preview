@@ -83,7 +83,9 @@ data class BlueprintLine(
     }
 
 
-    val isVertical: Boolean = start.y != end.y
+    val isVertical: Boolean = start.x == end.x
+
+    val isHorizontal: Boolean = start.y == end.y
 
     val midPoint: Offset = Offset(
         x = (start.x + end.x) / 2,

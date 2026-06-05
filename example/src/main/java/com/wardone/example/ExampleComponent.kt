@@ -32,11 +32,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.wardone.bluprint.items.BlueprintItem
-import com.wardone.bluprint.items.None
-import com.wardone.bluprint.items.Specific
-import com.wardone.bluprint.preview.BlueprintPreview
 import com.wardone.bluprint.preview.PassiveBlueprintPreview
+import com.wardone.bluprint.preview.blueprintId
 
 @Composable
 fun ExampleComponent(
@@ -62,7 +59,7 @@ fun ExampleComponent(
             title()
         }
         Box(
-            modifier = Modifier.height(80.dp)
+            modifier = Modifier.height(80.dp).blueprintId("t")
         ) {
             body()
         }
