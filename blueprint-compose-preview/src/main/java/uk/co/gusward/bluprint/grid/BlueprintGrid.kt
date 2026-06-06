@@ -30,6 +30,7 @@ import uk.co.gusward.bluprint.grid.utils.drawBlueprintLineLabel
 import uk.co.gusward.bluprint.items.BlueprintItemData
 import kotlin.math.min
 
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
@@ -53,97 +54,92 @@ fun BlueprintGrid(
 ) {
 
     val spacing = LocalDensity.current.run { gridSize.toPx() }
-    var screenSize by remember {
-        mutableStateOf(Size.Zero)
-    }
 
     val textMeasurer = rememberTextMeasurer()
     val decimalFormat = remember { DecimalFormat("0.##") }
     val density = LocalDensity.current
-    
-    // 1. Cache calculations using remember
-    val cachedBlueprintLinesAndLabels = remember(blueprintItems, screenSize, textMeasurer, density) {
-        if (screenSize == Size.Zero || blueprintItems.isEmpty()) return@remember emptyList()
+
+    BoxWithConstraints(
+        modifier = Modifier.background(MaterialTheme.colorScheme.background)
+    ) {
+        val screenSize = Size(
+            width = constraints.maxWidth.toFloat(),
+            height = constraints.maxHeight.toFloat()
+        )
         
-        val lines = calculateBlueprintLines(blueprintItems, screenSize)
-        
-        // Pre-measure and calculate positions
-        lines.map { line ->
-            val measuredText = textMeasurer.measure(
-                text = AnnotatedString(
-                    text = decimalFormat.format(density.run { line.length.toDp().value }),
-                    spanStyle = SpanStyle(
-                        fontSize = min((line.length * 0.15f), 12f).sp
-                    )
-                ),
-                style = TextStyle(Color.White),
-            )
+        // 1. Cache calculations using remember
+        val cachedBlueprintLinesAndLabels = remember(blueprintItems, screenSize, textMeasurer, density.density, density.fontScale) {
+            if (blueprintItems.isEmpty()) return@remember emptyList()
             
-            val baseTextTopLeft = if (line.isVertical) {
-                line.midPoint + Offset(
-                    x = 12f,
-                    y = -1f * (measuredText.size.height / 2f),
-                )
-            } else {
-                line.midPoint + Offset(
-                    x = -1f * (measuredText.size.width / 2f),
-                    y = 3f,
-                )
-            }
+            val lines = calculateBlueprintLines(blueprintItems, screenSize)
             
-            var textTopLeft = baseTextTopLeft
-            val textSize = measuredText.size.toSize()
-
-            val collision = lines.any { 
-                it != line && it.intersects(
-                    androidx.compose.ui.geometry.Rect(
-                        textTopLeft, 
-                        Offset(textTopLeft.x + textSize.width, textTopLeft.y + textSize.height)
-                    )
-                ) 
-            }
-
-            if (collision) {
-                val step = 10f
-                val maxSteps = 10
-                for (i in 1..maxSteps) {
-                    val offsetValue = i * step
-                    val candidates = if (line.isVertical) {
-                        listOf(Offset(0f, -offsetValue), Offset(0f, offsetValue))
-                    } else {
-                        listOf(Offset(-offsetValue, 0f), Offset(offsetValue, 0f))
-                    }
-
-                    val bestCandidate = candidates.firstOrNull { candidateOffset ->
-                        val candidateTopLeft = baseTextTopLeft + candidateOffset
-                        val candidateRect = androidx.compose.ui.geometry.Rect(
-                            candidateTopLeft,
-                            Offset(candidateTopLeft.x + textSize.width, candidateTopLeft.y + textSize.height)
+            // Pre-measure and calculate positions
+            lines.map { line ->
+                val measuredText = textMeasurer.measure(
+                    text = AnnotatedString(
+                        text = decimalFormat.format(density.run { line.length.toDp().value }),
+                        spanStyle = SpanStyle(
+                            fontSize = min((line.length * 0.15f), 12f).sp
                         )
-                        !lines.any { it != line && it.intersects(candidateRect) }
-                    }
+                    ),
+                    style = TextStyle(Color.White),
+                )
+                
+                val baseTextTopLeft = if (line.isVertical) {
+                    line.midPoint + Offset(
+                        x = 12f,
+                        y = -1f * (measuredText.size.height / 2f),
+                    )
+                } else {
+                    line.midPoint + Offset(
+                        x = -1f * (measuredText.size.width / 2f),
+                        y = 3f,
+                    )
+                }
+                
+                var textTopLeft = baseTextTopLeft
+                val textSize = measuredText.size.toSize()
 
-                    if (bestCandidate != null) {
-                        textTopLeft = baseTextTopLeft + bestCandidate
-                        break
+                val collision = lines.any { 
+                    it != line && it.intersects(
+                        androidx.compose.ui.geometry.Rect(
+                            textTopLeft, 
+                            Offset(textTopLeft.x + textSize.width, textTopLeft.y + textSize.height)
+                        )
+                    ) 
+                }
+
+                if (collision) {
+                    val step = 10f
+                    val maxSteps = 10
+                    for (i in 1..maxSteps) {
+                        val offsetValue = i * step
+                        val candidates = if (line.isVertical) {
+                            listOf(Offset(0f, -offsetValue), Offset(0f, offsetValue))
+                        } else {
+                            listOf(Offset(-offsetValue, 0f), Offset(offsetValue, 0f))
+                        }
+
+                        val bestCandidate = candidates.firstOrNull { candidateOffset ->
+                            val candidateTopLeft = baseTextTopLeft + candidateOffset
+                            val candidateRect = androidx.compose.ui.geometry.Rect(
+                                candidateTopLeft,
+                                Offset(candidateTopLeft.x + textSize.width, candidateTopLeft.y + textSize.height)
+                            )
+                            !lines.any { it != line && it.intersects(candidateRect) }
+                        }
+
+                        if (bestCandidate != null) {
+                            textTopLeft = baseTextTopLeft + bestCandidate
+                            break
+                        }
                     }
                 }
+                
+                BlueprintLineWithLabel(line, measuredText, textTopLeft)
             }
-            
-            BlueprintLineWithLabel(line, measuredText, textTopLeft)
         }
-    }
 
-    Box(
-        modifier = Modifier
-            .background(MaterialTheme.colorScheme.background)
-            .onGloballyPositioned { layoutCoordinates ->
-                screenSize = Size(
-                    width = layoutCoordinates.size.width.toFloat(),
-                    height = layoutCoordinates.size.height.toFloat(),
-                )
-            }
-    ) {
         /* draw grid */
         Canvas(
             modifier = Modifier.fillMaxSize(),
