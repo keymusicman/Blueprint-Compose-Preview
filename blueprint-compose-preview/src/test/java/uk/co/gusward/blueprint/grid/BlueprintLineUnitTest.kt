@@ -1,6 +1,7 @@
 package uk.co.gusward.blueprint.grid
 
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -12,6 +13,27 @@ import uk.co.gusward.bluprint.items.BlueprintItemData
 import uk.co.gusward.bluprint.items.WherePossible
 
 class BlueprintLineUnitTest {
+
+    @Test
+    fun `test intersects rect`() {
+        val rect = Rect(10f, 10f, 20f, 20f)
+
+        // Intersects top edge
+        assertTrue(BlueprintLine(Offset(15f, 5f), Offset(15f, 15f)).intersects(rect))
+        // Intersects bottom edge
+        assertTrue(BlueprintLine(Offset(15f, 15f), Offset(15f, 25f)).intersects(rect))
+        // Intersects left edge
+        assertTrue(BlueprintLine(Offset(5f, 15f), Offset(15f, 15f)).intersects(rect))
+        // Intersects right edge
+        assertTrue(BlueprintLine(Offset(15f, 15f), Offset(25f, 15f)).intersects(rect))
+
+        // Completely inside
+        assertTrue(BlueprintLine(Offset(12f, 12f), Offset(18f, 18f)).intersects(rect))
+
+        // Outside
+        assertFalse(BlueprintLine(Offset(0f, 0f), Offset(5f, 5f)).intersects(rect))
+        assertFalse(BlueprintLine(Offset(25f, 25f), Offset(30f, 30f)).intersects(rect))
+    }
 
     @Test
     fun `test equality`() {

@@ -1,6 +1,7 @@
 package uk.co.gusward.bluprint.grid
 
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import uk.co.gusward.bluprint.items.BlueprintItemData
 import kotlin.math.abs
 import kotlin.math.pow
@@ -25,25 +26,26 @@ data class BlueprintLine(
     }
 
     fun intersects(item: BlueprintItemData): Boolean {
-
         val topLeft = item.position
         val bottomRight = Offset(
             x = item.position.x + item.size.width,
             y = item.position.y + item.size.height,
         )
-        
+        return intersects(Rect(topLeft, bottomRight))
+    }
 
+    fun intersects(rect: Rect): Boolean {
         // Check if any endpoint is inside the rectangle
-        if (isPointInside(start.x, start.y, topLeft, bottomRight) ||
-            isPointInside(end.x, end.y, topLeft, bottomRight)) {
+        if (isPointInside(start.x, start.y, rect.topLeft, rect.bottomRight) ||
+            isPointInside(end.x, end.y, rect.topLeft, rect.bottomRight)) {
             return true
         }
 
         // Check intersection with each side of the rectangle
-        return intersects(BlueprintLine(topLeft, Offset(bottomRight.x, topLeft.y))) ||
-                intersects(BlueprintLine(topLeft, bottomRight)) ||
-                intersects(BlueprintLine(Offset(topLeft.x, bottomRight.y), bottomRight)) ||
-                intersects(BlueprintLine(bottomRight, Offset(bottomRight.x, topLeft.y)))
+        return intersects(BlueprintLine(rect.topLeft, rect.topRight)) ||
+                intersects(BlueprintLine(rect.bottomLeft, rect.bottomRight)) ||
+                intersects(BlueprintLine(rect.topLeft, rect.bottomLeft)) ||
+                intersects(BlueprintLine(rect.topRight, rect.bottomRight))
     }
 
     fun intersects(otherLine: BlueprintLine): Boolean {

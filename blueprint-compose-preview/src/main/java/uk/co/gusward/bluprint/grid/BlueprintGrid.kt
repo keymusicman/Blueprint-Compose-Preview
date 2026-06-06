@@ -168,7 +168,7 @@ fun BlueprintGrid(
                     )
                 }
 
-                drawBlueprintLineLabel(textMeasurer, blueprintLine, backgroundColor)
+                drawBlueprintLineLabel(textMeasurer, blueprintLine, backgroundColor, blueprintLines)
             }
         }
     }
