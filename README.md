@@ -4,7 +4,46 @@
   <img src="BlueprintLogo.png" width="800" alt="Blueprint Preview Logo">
 </p>
 
-Blueprint Preview is a developer productivity library for Jetpack Compose that allows you to see a "blueprint" overlay of your composables directly in the Android Studio Preview. It passively measures the components in your layout and renders dimensions, spacing, and alignment guides.
+## The goods
+
+Blueprint Preview is a dev tool for Jetpack Compose that shows you a "blueprint" overlay of your composables in the Android Studio Preview panel. It passively measures the components in your layout and renders dimensions and spacing just like an architectural blueprint.
+
+```kotlin
+dependencies {
+    debugImplementation("uk.co.gusward:blueprint-compose-preview:1.0.0")
+}
+```
+
+```kotlin
+import androidx.compose.ui.tooling.preview.Preview
+import uk.co.gusward.bluprint.preview.BlueprintPreview
+
+@Preview
+@Composable
+fun MyComponentPreview() {
+    BlueprintPreview {
+        MyComponent()
+    }
+}
+```
+
+## The waffle
+
+Hey, welcome to my project! ☀️
+
+As the world is becoming more and more AI driven, I thought it would be nice to add some background and a semi disclaimer for the boost AI gave me to finish it.
+
+I started this little project a couple years ago, before AI was a good enough to find its way into my daily dev work like has now, and it was great! without any help from the machine I managed to get the blueprint preview overlay measuring and looking exactly as it does now 😎
+
+It was never released back then partly because I didn't have time, but mainly because of practicality. What I originally built used an active measurement method, so you had to wrap every individual component in your composable with a `BlueprintItem { }`, which the grid then used to take its measurement.
+
+Fast forward to now, my daily dev workflow is almost 100% AI driven and output just mind blowing, I realised with the help of AI this project could be revived and improved to make something actually useful.
+
+So here it is! the rest of this readme was written by AI haha
+
+\- Gus
+
+## The rest
 
 ## Features
 
