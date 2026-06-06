@@ -27,7 +27,7 @@ fun MyComponentPreview() {
 }
 ```
 
-## The waffle
+## The ramble
 
 Hey, welcome to my project! ☀️
 
