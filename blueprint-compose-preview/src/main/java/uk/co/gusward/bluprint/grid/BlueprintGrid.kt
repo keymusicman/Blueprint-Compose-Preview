@@ -2,11 +2,15 @@ package uk.co.gusward.bluprint.grid
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.currentCompositeKeyHashCode
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -16,6 +20,7 @@ import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.clipPath
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
@@ -32,6 +37,9 @@ import uk.co.gusward.bluprint.grid.utils.drawBlueprintLineLabel
 import uk.co.gusward.bluprint.items.BlueprintItemData
 import java.text.DecimalFormat
 import kotlin.math.min
+
+// THE SURVIVOR CACHE FOR GRID SIZE: IMMUNE TO LAYOUTLIB'S RE-COMPOSITION WIPES
+private var staticGridSizeCache: MutableMap<Long, Size> = mutableMapOf()
 
 internal data class BlueprintLineWithLabel(
     val line: BlueprintLine,
@@ -53,13 +61,22 @@ internal fun BlueprintGrid(
     val decimalFormat = remember { DecimalFormat("0.##") }
     val density = LocalDensity.current
 
-    BoxWithConstraints(
-        modifier = Modifier.background(MaterialTheme.colorScheme.background)
+    Box(
+        modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
     ) {
-        val screenSize = Size(
-            width = constraints.maxWidth.toFloat(),
-            height = constraints.maxHeight.toFloat()
-        )
+        val compositeKey = currentCompositeKeyHashCode
+        var size by remember { mutableStateOf(staticGridSizeCache[compositeKey] ?: Size.Zero) }
+        
+        Box(modifier = Modifier.fillMaxSize().onGloballyPositioned { 
+            if (it.size.width > 200 && it.size.height > 200) { // Reject highly suspicious micro-layouts
+                val newSize = it.size.toSize()
+                if (size != newSize) {
+                    size = newSize
+                    staticGridSizeCache[compositeKey] = newSize
+                }
+            }
+        }) {
+        val screenSize = size
         
         // 1. Cache calculations using remember
         val cachedBlueprintLinesAndLabels = remember(blueprintItems, screenSize, textMeasurer, density.density, density.fontScale) {
@@ -250,4 +267,5 @@ internal fun BlueprintGrid(
             }
         }
     }
+}
 }

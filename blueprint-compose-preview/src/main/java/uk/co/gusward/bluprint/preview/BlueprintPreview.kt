@@ -48,6 +48,8 @@ import java.text.DecimalFormat
 
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.runtime.currentCompositeKeyHashCode
 
@@ -108,7 +110,6 @@ fun BlueprintPreview(
 
         Box(
             modifier = Modifier
-                .fillMaxSize()
                 .onGloballyPositioned { layoutCoordinates ->
                     if (layoutCoordinates.size.width > 0 && layoutCoordinates.size.height > 0) {
                         val newMap = extractBlueprintItemsFromSemantics(view)
@@ -122,18 +123,18 @@ fun BlueprintPreview(
             // 1. Draw the actual content first, faded
             Box(
                 modifier = Modifier
-                    .fillMaxSize()
                     .alpha(contentAlpha)
             ) {
                 content()
             }
 
-            // 2. Draw the Blueprint Grid and Overlay on top
-            BlueprintGrid(
-                gridSize = 24.dp,
-                blueprintItems = blueprintItemDataState,
-                alpha = backgroundAlpha
-            ) {
+            // 2. Draw the Blueprint Grid and Overlay on top, anchored to the content bounds
+            Box(modifier = Modifier.matchParentSize()) {
+                BlueprintGrid(
+                    gridSize = 24.dp,
+                    blueprintItems = blueprintItemDataState,
+                    alpha = backgroundAlpha
+                ) {
                 if (blueprintItemDataState.isEmpty()) {
                     // Fallback state...
                     DisposableEffect(view) {
@@ -180,6 +181,7 @@ fun BlueprintPreview(
                         }
                     }
                 }
+            }
             }
         }
     }
@@ -449,6 +451,31 @@ internal fun traverseSemanticsNode(node: androidx.compose.ui.semantics.Semantics
             if (!contentDescription.isNullOrEmpty()) {
                 label = contentDescription.joinToString(", ")
                 hasExplicitLabel = true
+            }
+        }
+
+        // Priority 4: Interactive elements (Buttons, etc.) - Implicit recognition
+        if (!hasExplicitLabel) {
+            val role = config.getOrNull(SemanticsProperties.Role)
+            val hasClickAction = config.contains(SemanticsActions.OnClick)
+
+            if (role == Role.Button || hasClickAction) {
+                hasExplicitLabel = true
+
+                // Try to find a label from its children (e.g. the Text inside the button)
+                val childText = node.children.firstOrNull {
+                    it.config.contains(SemanticsProperties.Text)
+                }?.config?.getOrNull(SemanticsProperties.Text)?.joinToString(", ")
+
+                label = childText ?: (if (role == Role.Button) "Button" else "Clickable")
+
+                // Since we've absorbed the meaning into this outer container, suppress labeled children
+                node.children.forEach { child ->
+                    if (child.config.contains(SemanticsProperties.Text) ||
+                        child.config.contains(SemanticsProperties.ContentDescription)) {
+                        suppressedNodes.add(child.id)
+                    }
+                }
             }
         }
 
