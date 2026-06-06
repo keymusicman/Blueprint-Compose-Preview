@@ -14,16 +14,17 @@ import uk.co.gusward.bluprint.constants.SemanticColors
 
 @Composable
 fun BlueprintTheme(
+    backgroundAlpha: Float = 1.0f,
     content: @Composable () -> Unit,
 ) {
     MaterialTheme(
         colorScheme = lightColorScheme(
-            background = SemanticColors.BlueprintBackground,
+            background = SemanticColors.BlueprintBackground.copy(alpha = backgroundAlpha),
             onBackground = SemanticColors.BlueprintAccent,
         ),
         content = {
             Box(
-                modifier = Modifier.background(SemanticColors.BlueprintBackground)
+                modifier = Modifier.background(SemanticColors.BlueprintBackground.copy(alpha = backgroundAlpha))
             ) {
                 ProvideTextStyle(
                     value = TextStyle(

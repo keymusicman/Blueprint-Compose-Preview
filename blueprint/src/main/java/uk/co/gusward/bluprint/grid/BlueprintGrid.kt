@@ -24,15 +24,16 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Dp
 import uk.co.gusward.bluprint.constants.Direction
-import uk.co.gusward.bluprint.items.BlueprintItemData
 import uk.co.gusward.bluprint.grid.utils.createArrowPath
 import uk.co.gusward.bluprint.grid.utils.drawBlueprintLineLabel
+import uk.co.gusward.bluprint.items.BlueprintItemData
 import kotlin.math.min
 
 @Composable
 fun BlueprintGrid(
     gridSize: Dp,
     blueprintItems: Map<String, BlueprintItemData>,
+    alpha: Float = 1f,
     content: @Composable () -> Unit
 ) {
 
@@ -69,18 +70,19 @@ fun BlueprintGrid(
             ) {
 
                 var start = spacing
+                val gridColor = Color.White.copy(alpha = alpha * 0.5f)
 
                 do {
                     drawLine(
                         start = Offset(x = 0f, y = start),
                         end = Offset(x = size.width, y = start),
-                        color = Color.White,
+                        color = gridColor,
                         strokeWidth = 1f,
                     )
                     drawLine(
                         start = Offset(x = start, y = 0f),
                         end = Offset(x = start, y = size.height),
-                        color = Color.White,
+                        color = gridColor,
                         strokeWidth = 1f,
                     )
                     start += spacing
@@ -184,7 +186,7 @@ fun BlueprintGrid(
                     drawLine(
                         start = blueprintLine.start,
                         end = blueprintLine.end,
-                        color = Color.White,
+                        color = Color.White.copy(alpha = alpha),
                         strokeWidth = width,
                     )
 
@@ -196,7 +198,7 @@ fun BlueprintGrid(
 
                     drawOutline(
                         outline = Outline.Generic(upArrowPath),
-                        color = Color.White,
+                        color = Color.White.copy(alpha = alpha),
                     )
 
                     val downArrowPath = createArrowPath(
@@ -207,7 +209,7 @@ fun BlueprintGrid(
 
                     drawOutline(
                         outline = Outline.Generic(downArrowPath),
-                        color = Color.White,
+                        color = Color.White.copy(alpha = alpha),
                     )
 
                     drawBlueprintLineLabel(textMeasurer, blueprintLine, backgroundColor)
@@ -290,7 +292,7 @@ fun BlueprintGrid(
                     drawLine(
                         start = blueprintLine.start,
                         end = blueprintLine.end,
-                        color = Color.White,
+                        color = Color.White.copy(alpha = alpha),
                         strokeWidth = width,
                     )
 
@@ -302,7 +304,7 @@ fun BlueprintGrid(
 
                     drawOutline(
                         outline = Outline.Generic(leftArrowPath),
-                        color = Color.White,
+                        color = Color.White.copy(alpha = alpha),
                     )
 
                     val rightArrowPath = createArrowPath(
@@ -313,7 +315,7 @@ fun BlueprintGrid(
 
                     drawOutline(
                         outline = Outline.Generic(rightArrowPath),
-                        color = Color.White,
+                        color = Color.White.copy(alpha = alpha),
                     )
 
                     drawBlueprintLineLabel(textMeasurer, blueprintLine, backgroundColor)
@@ -365,7 +367,7 @@ fun BlueprintGrid(
                         drawLine(
                             start = blueprintLine.start,
                             end = blueprintLine.end,
-                            color = Color.White,
+                            color = Color.White.copy(alpha = alpha),
                             strokeWidth = width,
                         )
 
@@ -377,7 +379,7 @@ fun BlueprintGrid(
 
                         drawOutline(
                             outline = Outline.Generic(leftArrowPath),
-                            color = Color.White,
+                            color = Color.White.copy(alpha = alpha),
                         )
 
                         val rightArrowPath = createArrowPath(
@@ -388,7 +390,7 @@ fun BlueprintGrid(
 
                         drawOutline(
                             outline = Outline.Generic(rightArrowPath),
-                            color = Color.White,
+                            color = Color.White.copy(alpha = alpha),
                         )
 
                         drawBlueprintLineLabel(textMeasurer, blueprintLine, backgroundColor)
@@ -439,7 +441,7 @@ fun BlueprintGrid(
                         drawLine(
                             start = blueprintLine.start,
                             end = blueprintLine.end,
-                            color = Color.White,
+                            color = Color.White.copy(alpha = alpha),
                             strokeWidth = width,
                         )
 
@@ -451,7 +453,7 @@ fun BlueprintGrid(
 
                         drawOutline(
                             outline = Outline.Generic(upArrowPath),
-                            color = Color.White,
+                            color = Color.White.copy(alpha = alpha),
                         )
 
                         val downArrowPath = createArrowPath(
@@ -462,7 +464,7 @@ fun BlueprintGrid(
 
                         drawOutline(
                             outline = Outline.Generic(downArrowPath),
-                            color = Color.White,
+                            color = Color.White.copy(alpha = alpha),
                         )
 
                         drawBlueprintLineLabel(textMeasurer, blueprintLine, backgroundColor)
@@ -513,7 +515,7 @@ fun BlueprintGrid(
                         drawLine(
                             start = blueprintLine.start,
                             end = blueprintLine.end,
-                            color = Color.White,
+                            color = Color.White.copy(alpha = alpha),
                             strokeWidth = width,
                         )
 
@@ -525,7 +527,7 @@ fun BlueprintGrid(
 
                         drawOutline(
                             outline = Outline.Generic(leftArrowPath),
-                            color = Color.White,
+                            color = Color.White.copy(alpha = alpha),
                         )
 
                         val rightArrowPath = createArrowPath(
@@ -536,7 +538,7 @@ fun BlueprintGrid(
 
                         drawOutline(
                             outline = Outline.Generic(rightArrowPath),
-                            color = Color.White,
+                            color = Color.White.copy(alpha = alpha),
                         )
 
                         drawBlueprintLineLabel(textMeasurer, blueprintLine, backgroundColor)
@@ -587,7 +589,7 @@ fun BlueprintGrid(
                         drawLine(
                             start = blueprintLine.start,
                             end = blueprintLine.end,
-                            color = Color.White,
+                            color = Color.White.copy(alpha = alpha),
                             strokeWidth = width,
                         )
 
@@ -599,7 +601,7 @@ fun BlueprintGrid(
 
                         drawOutline(
                             outline = Outline.Generic(upArrowPath),
-                            color = Color.White,
+                            color = Color.White.copy(alpha = alpha),
                         )
 
                         val downArrowPath = createArrowPath(
@@ -610,7 +612,7 @@ fun BlueprintGrid(
 
                         drawOutline(
                             outline = Outline.Generic(downArrowPath),
-                            color = Color.White,
+                            color = Color.White.copy(alpha = alpha),
                         )
 
                         drawBlueprintLineLabel(textMeasurer, blueprintLine, backgroundColor)

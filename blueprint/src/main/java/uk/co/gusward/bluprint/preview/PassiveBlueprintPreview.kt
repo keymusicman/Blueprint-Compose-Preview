@@ -56,9 +56,11 @@ private var staticBlueprintCache: MutableMap<Long, Map<String, BlueprintItemData
 
 @Composable
 fun PassiveBlueprintPreview(
+    backgroundAlpha: Float = 1f,
+    contentAlpha: Float = 1f,
     content: @Composable () -> Unit
 ) {
-    BlueprintTheme {
+    BlueprintTheme(backgroundAlpha = backgroundAlpha) {
         val compositeKey = currentCompositeKeyHashCode
         // Initialize state directly from the static cache to bypass Layoutlib zoom wipes
         var blueprintItemDataState by remember {
@@ -121,7 +123,7 @@ fun PassiveBlueprintPreview(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .alpha(0.5f)
+                    .alpha(contentAlpha)
             ) {
                 content()
             }
@@ -129,7 +131,8 @@ fun PassiveBlueprintPreview(
             // 2. Draw the Blueprint Grid and Overlay on top
             BlueprintGrid(
                 gridSize = 24.dp,
-                blueprintItems = blueprintItemDataState
+                blueprintItems = blueprintItemDataState,
+                alpha = backgroundAlpha
             ) {
                 if (blueprintItemDataState.isEmpty()) {
                     // Fallback state...
@@ -154,12 +157,12 @@ fun PassiveBlueprintPreview(
                     ) {
                         Text(
                             text = "Assemble to see Blueprint",
-                            color = Color.White,
+                            color = Color.White.copy(alpha = backgroundAlpha * 0.5f),
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier
                                 .semantics { testTag = "blueprint_fallback_text" }
-                                .background(SemanticColors.BlueprintBackground.copy(alpha = 0.8f))
-                                .border(1.dp, Color.White)
+                                .background(SemanticColors.BlueprintBackground.copy(alpha = backgroundAlpha * 0.8f))
+                                .border(1.dp, Color.White.copy(alpha = backgroundAlpha * 0.5f))
                                 .padding(16.dp)
                         )
                     }
@@ -168,10 +171,12 @@ fun PassiveBlueprintPreview(
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .semantics { testTag = "blueprint_internal_overlay" }
+                            .semantics { 
+                                testTag = "blueprint_internal_overlay" 
+                            }
                     ) {
                         blueprintItemDataState.values.forEach { item ->
-                            PassiveBlueprintItemOverlay(item)
+                            PassiveBlueprintItemOverlay(item, backgroundAlpha)
                         }
                     }
                 }
@@ -181,7 +186,7 @@ fun PassiveBlueprintPreview(
 }
 
 @Composable
-private fun PassiveBlueprintItemOverlay(itemData: BlueprintItemData) {
+private fun PassiveBlueprintItemOverlay(itemData: BlueprintItemData, backgroundAlpha: Float) {
     val decimalFormat = remember { DecimalFormat("0") }
 
     Box(
@@ -192,8 +197,8 @@ private fun PassiveBlueprintItemOverlay(itemData: BlueprintItemData) {
                 height = LocalDensity.current.run { itemData.size.height.toDp() }
             )
             .clearAndSetSemantics { } // Hide from semantics tree to prevent infinite loops!
-            .border(width = 2.dp, color = Color.White)
-            .background(SemanticColors.BlueprintBackground.copy(alpha = 0.8f))
+            .border(width = 2.dp, color = Color.White.copy(alpha = backgroundAlpha))
+            .background(SemanticColors.BlueprintBackground.copy(alpha = backgroundAlpha))
     ) {
         // Draw repeated 45 degree lines
         Canvas(modifier = Modifier.fillMaxSize()) {
@@ -210,7 +215,7 @@ private fun PassiveBlueprintItemOverlay(itemData: BlueprintItemData) {
                     drawLine(
                         start = Offset(x = 0f, y = start),
                         end = Offset(x = start, y = 0f),
-                        color = Color.White,
+                        color = Color.White.copy(alpha = backgroundAlpha * 0.5f),
                         strokeWidth = 2f,
                     )
                     start += spacing
@@ -262,15 +267,15 @@ private fun PassiveBlueprintItemOverlay(itemData: BlueprintItemData) {
         if (itemSize.width > (itemSize.height * 2)) {
             Row(
                 modifier = Modifier
-                    .background(SemanticColors.BlueprintBackground)
-                    .border(1.dp, Color.White.copy(alpha = 0.7f))
+                    .background(SemanticColors.BlueprintBackground.copy(alpha = backgroundAlpha))
+                    .border(1.dp, Color.White.copy(alpha = backgroundAlpha * 0.7f))
                     .padding(horizontal = hPadding, vertical = vPadding)
                     .align(Alignment.Center),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
                     fontSize = fontSize,
-                    color = Color.White,
+                    color = Color.White.copy(alpha = backgroundAlpha),
                     fontWeight = FontWeight.Medium,
                     text = density.run {
                         val width = decimalFormat.format(itemSize.width.toDp().value)
@@ -282,15 +287,15 @@ private fun PassiveBlueprintItemOverlay(itemData: BlueprintItemData) {
         } else {
             Column(
                 modifier = Modifier
-                    .background(SemanticColors.BlueprintBackground)
-                    .border(1.dp, Color.White.copy(alpha = 0.7f))
+                    .background(SemanticColors.BlueprintBackground.copy(alpha = backgroundAlpha))
+                    .border(1.dp, Color.White.copy(alpha = backgroundAlpha * 0.7f))
                     .padding(horizontal = hPadding, vertical = vPadding)
                     .align(Alignment.Center),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
                     fontSize = fontSize,
-                    color = Color.White,
+                    color = Color.White.copy(alpha = backgroundAlpha),
                     fontWeight = FontWeight.Medium,
                     text = density.run {
                         val width = decimalFormat.format(itemSize.width.toDp().value)
@@ -385,8 +390,6 @@ fun traverseSemanticsNode(node: androidx.compose.ui.semantics.SemanticsNode, ite
         val id = node.id
         
         // Use layoutInfo to get TRUE physical bounds.
-        // We attempt to get the outermost coordinates (including padding/background modifiers)
-        // by reading the outerCoordinator via reflection, falling back to inner coordinates.
         val layoutInfo = node.layoutInfo
         val outerCoordinates = try {
             val getModifierInfoMethod = layoutInfo.javaClass.getMethod("getModifierInfo")
@@ -412,6 +415,8 @@ fun traverseSemanticsNode(node: androidx.compose.ui.semantics.SemanticsNode, ite
         }
         
         val bounds = outerCoordinates.boundsInRoot()
+        
+        android.util.Log.d("PassiveBlueprint", "Node $id: bounds=$bounds, layoutInfoBounds=${layoutInfo.coordinates.boundsInRoot()}, semanticBounds=${node.boundsInRoot}")
 
         var label = "Node $id"
         var hasExplicitLabel = false
@@ -448,9 +453,11 @@ fun traverseSemanticsNode(node: androidx.compose.ui.semantics.SemanticsNode, ite
         }
 
         // --- ID PREFERENCE & REDUNDANCY FILTER ---
-        // If this node has a label AND it's a layout (not a Leaf node),
+        // If this node has an EXPLICIT TestTag AND it's a layout (not a Leaf node),
         // we check for a single labeled child to "absorb" to prevent double blueprints.
-        if (hasExplicitLabel && node.children.isNotEmpty()) {
+        // We MUST verify testTag != null, otherwise untagged parents might accidentally
+        // inherit a child's label and suppress other children.
+        if (hasExplicitLabel && testTag != null && node.children.isNotEmpty()) {
             val labeledChildren = node.children.filter { child ->
                 val childConfig = child.config
                 childConfig.contains(SemanticsProperties.TestTag) ||

@@ -59,7 +59,7 @@ fun BlueprintItem(
         modifier = modifier
             .border(
                 width = 2.dp,
-                color = Color.White,
+                color = Color.White.copy(alpha = 0.5f),
             )
             .background(
                 color = SemanticColors.BlueprintBackground,
@@ -115,7 +115,7 @@ fun BlueprintItem(
                     drawLine(
                         start = Offset(x = 0f, y = start),
                         end = Offset(x = start, y = 0f),
-                        color = Color.White,
+                        color = Color.White.copy(alpha = 0.5f),
                         strokeWidth = 2f,
                     )
                     start += spacing
@@ -167,7 +167,7 @@ fun BlueprintItem(
             Row(
                 modifier = Modifier
                     .background(SemanticColors.BlueprintBackground)
-                    .border(1.dp, Color.White.copy(alpha = 0.7f))
+                    .border(1.dp, Color.White.copy(alpha = 0.5f).copy(alpha = 0.7f))
                     .padding(horizontal = hPadding, vertical = vPadding),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -190,7 +190,7 @@ fun BlueprintItem(
             Column(
                 modifier = Modifier
                     .background(MaterialTheme.colorScheme.background)
-                    .border(1.dp, Color.White.copy(alpha = 0.7f))
+                    .border(1.dp, Color.White.copy(alpha = 0.5f).copy(alpha = 0.7f))
                     .padding(horizontal = hPadding, vertical = vPadding),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
