@@ -30,6 +30,20 @@ import uk.co.gusward.bluprint.grid.utils.drawBlueprintLineLabel
 import uk.co.gusward.bluprint.items.BlueprintItemData
 import kotlin.math.min
 
+import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.toSize
+import java.text.DecimalFormat
+
+data class BlueprintLineWithLabel(
+    val line: uk.co.gusward.bluprint.grid.BlueprintLine,
+    val textLayoutResult: TextLayoutResult,
+    val textTopLeft: Offset,
+)
+
 @Composable
 fun BlueprintGrid(
     gridSize: Dp,
@@ -41,6 +55,83 @@ fun BlueprintGrid(
     val spacing = LocalDensity.current.run { gridSize.toPx() }
     var screenSize by remember {
         mutableStateOf(Size.Zero)
+    }
+
+    val textMeasurer = rememberTextMeasurer()
+    val decimalFormat = remember { DecimalFormat("0.##") }
+    val density = LocalDensity.current
+    
+    // 1. Cache calculations using remember
+    val cachedBlueprintLinesAndLabels = remember(blueprintItems, screenSize, textMeasurer, density) {
+        if (screenSize == Size.Zero || blueprintItems.isEmpty()) return@remember emptyList()
+        
+        val lines = calculateBlueprintLines(blueprintItems, screenSize)
+        
+        // Pre-measure and calculate positions
+        lines.map { line ->
+            val measuredText = textMeasurer.measure(
+                text = AnnotatedString(
+                    text = decimalFormat.format(density.run { line.length.toDp().value }),
+                    spanStyle = SpanStyle(
+                        fontSize = min((line.length * 0.15f), 12f).sp
+                    )
+                ),
+                style = TextStyle(Color.White),
+            )
+            
+            val baseTextTopLeft = if (line.isVertical) {
+                line.midPoint + Offset(
+                    x = 12f,
+                    y = -1f * (measuredText.size.height / 2f),
+                )
+            } else {
+                line.midPoint + Offset(
+                    x = -1f * (measuredText.size.width / 2f),
+                    y = 3f,
+                )
+            }
+            
+            var textTopLeft = baseTextTopLeft
+            val textSize = measuredText.size.toSize()
+
+            val collision = lines.any { 
+                it != line && it.intersects(
+                    androidx.compose.ui.geometry.Rect(
+                        textTopLeft, 
+                        Offset(textTopLeft.x + textSize.width, textTopLeft.y + textSize.height)
+                    )
+                ) 
+            }
+
+            if (collision) {
+                val step = 10f
+                val maxSteps = 10
+                for (i in 1..maxSteps) {
+                    val offsetValue = i * step
+                    val candidates = if (line.isVertical) {
+                        listOf(Offset(0f, -offsetValue), Offset(0f, offsetValue))
+                    } else {
+                        listOf(Offset(-offsetValue, 0f), Offset(offsetValue, 0f))
+                    }
+
+                    val bestCandidate = candidates.firstOrNull { candidateOffset ->
+                        val candidateTopLeft = baseTextTopLeft + candidateOffset
+                        val candidateRect = androidx.compose.ui.geometry.Rect(
+                            candidateTopLeft,
+                            Offset(candidateTopLeft.x + textSize.width, candidateTopLeft.y + textSize.height)
+                        )
+                        !lines.any { it != line && it.intersects(candidateRect) }
+                    }
+
+                    if (bestCandidate != null) {
+                        textTopLeft = baseTextTopLeft + bestCandidate
+                        break
+                    }
+                }
+            }
+            
+            BlueprintLineWithLabel(line, measuredText, textTopLeft)
+        }
     }
 
     Box(
@@ -94,7 +185,6 @@ fun BlueprintGrid(
         /* display content FIRST so measuring lines draw over top of it */
         content()
 
-        val textMeasurer = rememberTextMeasurer()
         val backgroundColor = MaterialTheme.colorScheme.background
 
         val measuredLineWidth = 4f
@@ -105,9 +195,7 @@ fun BlueprintGrid(
             modifier = Modifier.fillMaxSize(),
         ) {
 
-            val blueprintLines = calculateBlueprintLines(blueprintItems, screenSize)
-
-            blueprintLines.forEach { blueprintLine ->
+            cachedBlueprintLinesAndLabels.forEach { (blueprintLine, textLayoutResult, textTopLeft) ->
 
                 val width = min(measuredLineWidth, blueprintLine.length * minimumScale)
 
@@ -168,7 +256,7 @@ fun BlueprintGrid(
                     )
                 }
 
-                drawBlueprintLineLabel(textMeasurer, blueprintLine, backgroundColor, blueprintLines)
+                drawBlueprintLineLabel(textLayoutResult, textTopLeft, backgroundColor)
             }
         }
     }

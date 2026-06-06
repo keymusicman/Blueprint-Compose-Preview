@@ -472,11 +472,17 @@ fun traverseSemanticsNode(node: androidx.compose.ui.semantics.SemanticsNode, ite
         }
 
         if (hasExplicitLabel && !suppressedNodes.contains(id) && bounds.width > 2f && bounds.height > 2f && !node.isRoot) {
+            // Round bounds to 1 decimal place to prevent sub-pixel recomposition loops
+            val roundedLeft = kotlin.math.round(bounds.left * 10f) / 10f
+            val roundedTop = kotlin.math.round(bounds.top * 10f) / 10f
+            val roundedWidth = kotlin.math.round(bounds.width * 10f) / 10f
+            val roundedHeight = kotlin.math.round(bounds.height * 10f) / 10f
+            
             items[id.toString()] = BlueprintItemData(
                 id = id.toString(),
                 label = label,
-                position = Offset(bounds.left, bounds.top),
-                size = Size(bounds.width, bounds.height),
+                position = Offset(roundedLeft, roundedTop),
+                size = Size(roundedWidth, roundedHeight),
                 parentConnectionConfig = WherePossible
             )
         }
