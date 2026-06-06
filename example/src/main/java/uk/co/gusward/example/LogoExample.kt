@@ -2,26 +2,25 @@ package uk.co.gusward.example
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.PlatformTextStyle
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.constraintlayout.compose.ConstraintLayout
 import uk.co.gusward.bluprint.preview.PassiveBlueprintPreview
 import uk.co.gusward.bluprint.preview.blueprintId
-import androidx.constraintlayout.compose.ConstraintLayout
-
-import androidx.compose.material3.Text
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.sp
-
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.PlatformTextStyle
 
 @Composable
 fun Block(w: Int, h: Int, modifier: Modifier = Modifier) {
@@ -37,9 +36,9 @@ fun Block(w: Int, h: Int, modifier: Modifier = Modifier) {
 fun BlueprintLogo() {
     Box(
         modifier = Modifier
-            .fillMaxWidth()
+            .fillMaxSize()
             .background(Color(0xFF003153)) // Blueprint blue background
-            .padding(32.dp),
+            .padding(16.dp),
         contentAlignment = Alignment.Center
     ) {
         ConstraintLayout {
@@ -49,11 +48,20 @@ fun BlueprintLogo() {
             val mainFontSize = 80.sp
             val subFontSize = 40.sp
 
+            val tightTextStyle = TextStyle(
+                platformStyle = PlatformTextStyle(includeFontPadding = false),
+                lineHeightStyle = LineHeightStyle(
+                    alignment = LineHeightStyle.Alignment.Center,
+                    trim = LineHeightStyle.Trim.Both
+                )
+            )
+
             Text(
                 text = "blueprint",
                 color = logoColor,
                 fontSize = mainFontSize,
                 fontWeight = FontWeight.Black,
+                style = tightTextStyle.copy(lineHeight = mainFontSize),
                 modifier = Modifier
                     .constrainAs(blueprint) {
                         top.linkTo(parent.top)
@@ -79,10 +87,7 @@ fun BlueprintLogo() {
                 color = logoColor,
                 fontSize = subFontSize,
                 fontWeight = FontWeight.Normal, // Differentiate slightly from preview
-                style = TextStyle(
-                    lineHeight = 32.sp,
-                    platformStyle = PlatformTextStyle(includeFontPadding = false)
-                ),
+                style = tightTextStyle.copy(lineHeight = subFontSize),
                 modifier = Modifier
                     .constrainAs(compose) {
                         top.linkTo(blueprint.bottom, margin = 16.dp)
@@ -96,13 +101,10 @@ fun BlueprintLogo() {
                 color = logoColor,
                 fontSize = subFontSize,
                 fontWeight = FontWeight.Bold,
-                style = TextStyle(
-                    lineHeight = 32.sp,
-                    platformStyle = PlatformTextStyle(includeFontPadding = false)
-                ),
+                style = tightTextStyle.copy(lineHeight = subFontSize),
                 modifier = Modifier
                     .constrainAs(preview) {
-                        top.linkTo(compose.top) 
+                        top.linkTo(compose.top)
                         end.linkTo(blueprint.end) // Align to end of blueprint
                     }
                     .blueprintId("preview")
@@ -111,19 +113,19 @@ fun BlueprintLogo() {
     }
 }
 
-@Preview(widthDp = 500, heightDp = 220)
+@Preview(widthDp = 500,  heightDp = 220)
 @Composable
 fun BlueprintLogoStandardPreview() {
     BlueprintLogo()
 }
 
-@Preview(widthDp = 500, heightDp = 220)
+@Preview(widthDp = 500,  heightDp = 220)
 @Composable
 fun BlueprintLogoPassivePreview() {
     PassiveBlueprintPreview(
         contentAlpha = 1f,
         backgroundAlpha = 0.5f,
     ) {
-        BlueprintLogo()
+        BlueprintLogoStandardPreview()
     }
 }
