@@ -33,7 +33,7 @@ Hey, welcome to my project! ☀️
 
 As the world is becoming more and more AI driven, I thought it would be nice to add some background and a semi disclaimer for the boost AI gave me to finish it.
 
-I started this little project a couple years ago, before AI was a good enough to find its way into my daily dev work like has now, and it was great! without any help from the machine I managed to get the blueprint preview overlay measuring and looking exactly as it does now 😎
+I started this little project a couple years ago, before AI was a good enough to find its way into my daily dev work, and it was great! without any help from the machine I managed to get the blueprint preview overlay measuring and looking exactly as it does now 😎
 
 It was never released back then partly because I didn't have time, but mainly because of practicality. What I originally built used an active measurement method, so you had to wrap every individual component in your composable with a `BlueprintItem { }`, which the grid then used to take its measurement.
 
