@@ -32,7 +32,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import uk.co.gusward.bluprint.preview.PassiveBlueprintPreview
+import uk.co.gusward.bluprint.preview.BlueprintPreview
 import uk.co.gusward.bluprint.preview.blueprintId
 
 @Composable
@@ -168,7 +168,7 @@ fun ExampleComponentStandardPreview() {
 @Preview(device = "spec:width=300dp,height=300dp,dpi=440")
 @Composable
 fun ExampleComponentBlueprintPreview() {
-    PassiveBlueprintPreview {
+    BlueprintPreview {
         ExampleComponentStandardPreview()
     }
 }

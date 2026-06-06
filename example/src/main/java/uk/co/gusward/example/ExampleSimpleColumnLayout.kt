@@ -11,7 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import uk.co.gusward.bluprint.preview.PassiveBlueprintPreview
+import uk.co.gusward.bluprint.preview.BlueprintPreview
 
 @Composable
 fun ExampleSimpleColumn(
@@ -31,8 +31,8 @@ fun ExampleSimpleColumn(
 
 @Preview
 @Composable
-fun PassiveExampleSimpleColumnBlueprintPreview() {
-    PassiveBlueprintPreview {
+fun ExampleSimpleColumnBlueprintPreview() {
+    BlueprintPreview {
         ExampleSimpleColumn(
             listOf(
                 { Box(modifier = Modifier.height(100.dp)) {} },

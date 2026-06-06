@@ -55,7 +55,7 @@ import androidx.compose.runtime.currentCompositeKeyHashCode
 private var staticBlueprintCache: MutableMap<Long, Map<String, BlueprintItemData>> = mutableMapOf()
 
 @Composable
-fun PassiveBlueprintPreview(
+fun BlueprintPreview(
     backgroundAlpha: Float = 1f,
     contentAlpha: Float = 1f,
     content: @Composable () -> Unit

@@ -19,7 +19,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
-import uk.co.gusward.bluprint.preview.PassiveBlueprintPreview
+import uk.co.gusward.bluprint.preview.BlueprintPreview
 import uk.co.gusward.bluprint.preview.blueprintId
 
 @Composable
@@ -121,8 +121,8 @@ fun BlueprintLogoStandardPreview() {
 
 @Preview(widthDp = 500,  heightDp = 220)
 @Composable
-fun BlueprintLogoPassivePreview() {
-    PassiveBlueprintPreview(
+fun BlueprintLogoPreview() {
+    BlueprintPreview(
         contentAlpha = 1f,
         backgroundAlpha = 0.5f,
     ) {
