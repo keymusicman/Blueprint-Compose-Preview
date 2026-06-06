@@ -121,7 +121,7 @@ fun BlueprintLogoStandardPreview() {
 
 @Preview(widthDp = 500,  heightDp = 220)
 @Composable
-fun BlueprintLogoPreview() {
+fun BlueprintLogoBlueprintPreview() {
     BlueprintPreview(
         contentAlpha = 1f,
         backgroundAlpha = 0.5f,
