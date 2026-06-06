@@ -45,7 +45,7 @@ fun DrawScope.drawBlueprintLineLabel(
     }
 
     drawRect(
-        color = backgroundColor,
+        color = backgroundColor.copy(alpha = 1f),
         topLeft = textTopLeft,
         size = measuredText.size.toSize(),
     )

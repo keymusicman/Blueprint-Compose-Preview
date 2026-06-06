@@ -267,15 +267,15 @@ private fun PassiveBlueprintItemOverlay(itemData: BlueprintItemData, backgroundA
         if (itemSize.width > (itemSize.height * 2)) {
             Row(
                 modifier = Modifier
-                    .background(SemanticColors.BlueprintBackground.copy(alpha = backgroundAlpha))
-                    .border(1.dp, Color.White.copy(alpha = backgroundAlpha * 0.7f))
+                    .background(SemanticColors.BlueprintBackground.copy(alpha = 1f))
+                    .border(1.dp, Color.White.copy(alpha = 1f))
                     .padding(horizontal = hPadding, vertical = vPadding)
                     .align(Alignment.Center),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
                     fontSize = fontSize,
-                    color = Color.White.copy(alpha = backgroundAlpha),
+                    color = Color.White.copy(alpha = 1f),
                     fontWeight = FontWeight.Medium,
                     text = density.run {
                         val width = decimalFormat.format(itemSize.width.toDp().value)
@@ -287,15 +287,15 @@ private fun PassiveBlueprintItemOverlay(itemData: BlueprintItemData, backgroundA
         } else {
             Column(
                 modifier = Modifier
-                    .background(SemanticColors.BlueprintBackground.copy(alpha = backgroundAlpha))
-                    .border(1.dp, Color.White.copy(alpha = backgroundAlpha * 0.7f))
+                    .background(SemanticColors.BlueprintBackground.copy(alpha = 1f))
+                    .border(1.dp, Color.White.copy(alpha = 1f))
                     .padding(horizontal = hPadding, vertical = vPadding)
                     .align(Alignment.Center),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
                     fontSize = fontSize,
-                    color = Color.White.copy(alpha = backgroundAlpha),
+                    color = Color.White.copy(alpha = 1f),
                     fontWeight = FontWeight.Medium,
                     text = density.run {
                         val width = decimalFormat.format(itemSize.width.toDp().value)
