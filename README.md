@@ -30,19 +30,19 @@ fun MyComponentPreview() {
 
 ## The ramble
 
-Hey, welcome to blueprint! ☀️
+Hey!
 
-As the world is becoming more and more AI driven, I thought it would be nice to add some background and a semi disclaimer for the boost AI gave me to finish this little project.
+As the world is becoming more and more AI driven, I thought it would be nice to add some background on the roots of this project.
 
-I started this little project a couple years ago, before AI was a good enough to find its way into my daily dev work, and it was great! without any help from the machine I managed to get the blueprint preview overlay measuring and looking exactly as it does now 😎
+I started the idea a couple years ago, way before AI was good enough to find its way into my daily dev work, and it was great! without any help from the robot I managed to get the blueprint preview overlay measuring and looking exactly as it does now 😎
 
-It was never released back then partly because I didn't have time, but mainly because of practicality. What I originally built used an active measurement method, so you had to wrap every individual component in your composable with a `BlueprintItem { }`, which the grid then used to take its measurement.
+It was never released back then partly because I didn't have time, but mainly because of practicality. What I originally built required you had to wrap every individual component in your composable with a `BlueprintItem { }`, which the grid then used to take its measurement.
 
-Fast forward to now, my daily dev workflow is almost 100% AI driven and output just mind blowing, I realised with the help of AI this project could be revived and improved to make something could actually be useful, so here it is!
+With the help of AI the project has become far more usefull and frictionless - the blueprint is now completely passive, so with just a one line wrapper around your component you get a fully measured blueprint in Android Studio which you can compare with designs at a glance.
 
-The blueprint is now completely passive, so with a one line wrapper around your component you get a fully measured blueprint in Android Studio which you can compare with designs at a glance. (for more control you can still add blueprintId modifier, which is just a fancy name for test tag).
+So while the majority of the project was hand made, this final push has been massively boosted by AI, and completed in just a couple of days 🚀
 
-the rest of this readme was written by AI haha
+Hope you enjoy! the rest of this readme was written by AI haha
 
 \- Gus
 
