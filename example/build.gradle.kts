@@ -50,7 +50,7 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.9.8")
 
     /* note debug implementation */
-    debugImplementation(project(":blueprint"))
+    debugImplementation(project(":blueprint-compose-preview"))
 
     testImplementation("junit:junit:4.13.2")
 

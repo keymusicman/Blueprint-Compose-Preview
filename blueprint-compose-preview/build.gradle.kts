@@ -47,7 +47,7 @@ publishing {
     publications {
         create<MavenPublication>("release") {
             groupId = "uk.co.gusward"
-            artifactId = "blueprint"
+            artifactId = "blueprint-compose-preview"
             version = "1.0.0"
 
             afterEvaluate {
