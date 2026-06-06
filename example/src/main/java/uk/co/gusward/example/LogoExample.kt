@@ -16,6 +16,13 @@ import uk.co.gusward.bluprint.preview.PassiveBlueprintPreview
 import uk.co.gusward.bluprint.preview.blueprintId
 import androidx.constraintlayout.compose.ConstraintLayout
 
+import androidx.compose.material3.Text
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
+
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.PlatformTextStyle
+
 @Composable
 fun Block(w: Int, h: Int, modifier: Modifier = Modifier) {
     Box(
@@ -36,45 +43,70 @@ fun BlueprintLogo() {
         contentAlignment = Alignment.Center
     ) {
         ConstraintLayout {
-            // Create refs for B.p.
-            val (B, Dot1, P, Dot2) = createRefs()
-            val space = 24.dp
+            val (blueprint, dot, compose, preview) = createRefs()
 
-            // b (90x135)
-            ConstraintLayout(modifier = Modifier.constrainAs(B) { start.linkTo(parent.start) }.blueprintId("b")) {
-                val (l, m, b, rb) = createRefs()
-                Block(22, 135, Modifier.constrainAs(l) { start.linkTo(parent.start); top.linkTo(parent.top) })
-                Block(46, 22, Modifier.constrainAs(m) { start.linkTo(l.end); top.linkTo(parent.top, 56.dp) })
-                Block(46, 22, Modifier.constrainAs(b) { start.linkTo(l.end); top.linkTo(parent.top, 113.dp) })
-                Block(22, 35, Modifier.constrainAs(rb) { start.linkTo(m.end); top.linkTo(m.bottom) })
-            }
+            val logoColor = Color.White.copy(alpha = 0.8f)
+            val mainFontSize = 80.sp
+            val subFontSize = 40.sp
 
-            // Dot 1 (22x22)
-            ConstraintLayout(modifier = Modifier.constrainAs(Dot1) { 
-                start.linkTo(B.end, space)
-                bottom.linkTo(B.bottom)
-            }.blueprintId(".")) {
-                val (d) = createRefs()
-                Block(22, 22, Modifier.constrainAs(d) { start.linkTo(parent.start); top.linkTo(parent.top) })
-            }
+            Text(
+                text = "blueprint",
+                color = logoColor,
+                fontSize = mainFontSize,
+                fontWeight = FontWeight.Black,
+                modifier = Modifier
+                    .constrainAs(blueprint) {
+                        top.linkTo(parent.top)
+                        start.linkTo(parent.start)
+                    }
+                    .blueprintId("blueprint")
+            )
 
-            // P (lowercase 'p' drops below baseline, but for block consistency we'll make it uppercase P style 90x135)
-            ConstraintLayout(modifier = Modifier.constrainAs(P) { start.linkTo(Dot1.end, space) }.blueprintId("p")) {
-                val (l, t, m, r) = createRefs()
-                Block(22, 135, Modifier.constrainAs(l) { start.linkTo(parent.start); top.linkTo(parent.top) })
-                Block(46, 22, Modifier.constrainAs(t) { start.linkTo(l.end); top.linkTo(parent.top) })
-                Block(46, 22, Modifier.constrainAs(m) { start.linkTo(l.end); top.linkTo(parent.top, 56.dp) })
-                Block(22, 34, Modifier.constrainAs(r) { start.linkTo(t.end); top.linkTo(t.bottom) })
-            }
+            // Full stop block
+            Block(
+                w = 11,
+                h = 11,
+                modifier = Modifier
+                    .constrainAs(dot) {
+                        bottom.linkTo(blueprint.bottom, margin = 18.dp) // Offset slightly lower than before for perfect alignment
+                        start.linkTo(blueprint.end, margin = 8.dp)
+                    }
+                    .blueprintId(".")
+            )
 
-            // Dot 2 (22x22)
-            ConstraintLayout(modifier = Modifier.constrainAs(Dot2) { 
-                start.linkTo(P.end, space)
-                bottom.linkTo(P.bottom)
-            }.blueprintId(".")) {
-                val (d) = createRefs()
-                Block(22, 22, Modifier.constrainAs(d) { start.linkTo(parent.start); top.linkTo(parent.top) })
-            }
+            Text(
+                text = "compose",
+                color = logoColor,
+                fontSize = subFontSize,
+                fontWeight = FontWeight.Normal, // Differentiate slightly from preview
+                style = TextStyle(
+                    lineHeight = 32.sp,
+                    platformStyle = PlatformTextStyle(includeFontPadding = false)
+                ),
+                modifier = Modifier
+                    .constrainAs(compose) {
+                        top.linkTo(blueprint.bottom, margin = 16.dp)
+                        start.linkTo(blueprint.start) // Align to start of blueprint
+                    }
+                    .blueprintId("compose")
+            )
+
+            Text(
+                text = "preview",
+                color = logoColor,
+                fontSize = subFontSize,
+                fontWeight = FontWeight.Bold,
+                style = TextStyle(
+                    lineHeight = 32.sp,
+                    platformStyle = PlatformTextStyle(includeFontPadding = false)
+                ),
+                modifier = Modifier
+                    .constrainAs(preview) {
+                        top.linkTo(compose.top) 
+                        end.linkTo(blueprint.end) // Align to end of blueprint
+                    }
+                    .blueprintId("preview")
+            )
         }
     }
 }
