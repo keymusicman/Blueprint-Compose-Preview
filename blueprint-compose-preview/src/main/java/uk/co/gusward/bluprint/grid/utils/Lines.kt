@@ -7,7 +7,7 @@ import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.unit.toSize
 
-fun DrawScope.drawBlueprintLineLabel(
+internal fun DrawScope.drawBlueprintLineLabel(
     textLayoutResult: TextLayoutResult,
     textTopLeft: Offset,
     backgroundColor: Color,

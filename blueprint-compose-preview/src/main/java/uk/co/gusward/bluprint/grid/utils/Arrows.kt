@@ -5,7 +5,7 @@ import androidx.compose.ui.graphics.Path
 import uk.co.gusward.bluprint.constants.Direction
 import kotlin.math.min
 
-fun createArrowPath(
+internal fun createArrowPath(
     direction: Direction,
     tip: Offset,
     lengthOfLine: Float,

@@ -51,6 +51,7 @@ dependencies {
 
     /* note debug implementation */
     debugImplementation(project(":blueprint-compose-preview"))
+    releaseImplementation(project(":blueprint-compose-preview-no-op"))
 
     testImplementation("junit:junit:4.13.2")
 

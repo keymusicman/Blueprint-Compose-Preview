@@ -324,7 +324,7 @@ private fun findAndroidComposeView(view: View): View? {
 // A thread-local or temporary set to track nodes that should be ignored in the current traversal
 private val suppressedNodes = mutableSetOf<Int>()
 
-fun extractBlueprintItemsFromSemantics(view: View): Map<String, BlueprintItemData> {
+internal fun extractBlueprintItemsFromSemantics(view: View): Map<String, BlueprintItemData> {
     val items = mutableMapOf<String, BlueprintItemData>()
     suppressedNodes.clear() 
 
@@ -385,7 +385,7 @@ fun extractBlueprintItemsFromSemantics(view: View): Map<String, BlueprintItemDat
     return items
 }
 
-fun traverseSemanticsNode(node: androidx.compose.ui.semantics.SemanticsNode, items: MutableMap<String, BlueprintItemData>) {
+internal fun traverseSemanticsNode(node: androidx.compose.ui.semantics.SemanticsNode, items: MutableMap<String, BlueprintItemData>) {
     try {
         val id = node.id
         

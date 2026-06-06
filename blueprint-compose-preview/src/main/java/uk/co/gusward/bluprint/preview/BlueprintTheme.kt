@@ -13,7 +13,7 @@ import androidx.compose.ui.text.style.LineHeightStyle
 import uk.co.gusward.bluprint.constants.SemanticColors
 
 @Composable
-fun BlueprintTheme(
+internal fun BlueprintTheme(
     backgroundAlpha: Float = 1.0f,
     content: @Composable () -> Unit,
 ) {

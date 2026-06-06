@@ -10,7 +10,7 @@ import kotlin.math.sqrt
 /**
  * Lots of maths help from Gemini on this
  */
-data class BlueprintLine(
+internal data class BlueprintLine(
     val start: Offset,
     val end: Offset,
 ) {

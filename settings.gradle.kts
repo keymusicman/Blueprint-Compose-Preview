@@ -15,4 +15,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "Blueprint"
 include(":blueprint-compose-preview")
+include(":blueprint-compose-preview-no-op")
 include(":example")

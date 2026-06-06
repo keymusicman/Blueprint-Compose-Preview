@@ -8,7 +8,7 @@ import uk.co.gusward.bluprint.constants.Direction
  *
  * Blueprint items will never draw lines through other blueprint items regardless of this setting.
  */
-sealed class ParentConnectionConfig {
+internal sealed class ParentConnectionConfig {
 
     abstract fun shouldConnectParent(dir: Direction): Boolean
 }
@@ -16,21 +16,21 @@ sealed class ParentConnectionConfig {
 /**
  * draw all possible lines.
  */
-data object WherePossible : ParentConnectionConfig() {
+internal data object WherePossible : ParentConnectionConfig() {
     override fun shouldConnectParent(dir: Direction) = true
 }
 
 /**
  * draw no lines.
  */
-data object None : ParentConnectionConfig() {
+internal data object None : ParentConnectionConfig() {
     override fun shouldConnectParent(dir: Direction) = false
 }
 
 /**
  * configure specific sides, all sides default to WherePossible.
  */
-data class Specific(
+internal data class Specific(
     val left: ParentConnectionConfig = WherePossible,
     val top: ParentConnectionConfig = WherePossible,
     val right: ParentConnectionConfig = WherePossible,

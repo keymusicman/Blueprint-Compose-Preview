@@ -6,7 +6,7 @@ import uk.co.gusward.bluprint.constants.Direction
 import uk.co.gusward.bluprint.grid.BlueprintLine
 import uk.co.gusward.bluprint.items.BlueprintItemData
 
-fun calculateBlueprintLines(
+internal fun calculateBlueprintLines(
     blueprintItems: Map<String, BlueprintItemData>,
     screenSize: Size,
     lineSpacingOffset: Float = 40f

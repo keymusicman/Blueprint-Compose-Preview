@@ -3,7 +3,7 @@ package uk.co.gusward.bluprint.items
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 
-data class BlueprintItemData(
+internal data class BlueprintItemData(
     val id: String,
     val label: String,
     val position: Offset,
