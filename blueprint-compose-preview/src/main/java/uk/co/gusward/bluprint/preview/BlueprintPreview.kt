@@ -156,7 +156,7 @@ fun BlueprintPreview(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "Assemble to see Blueprint",
+                            text = "build to see blueprint ☝\uFE0F",
                             color = Color.White.copy(alpha = backgroundAlpha * 0.5f),
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier
@@ -438,7 +438,7 @@ fun traverseSemanticsNode(node: androidx.compose.ui.semantics.SemanticsNode, ite
             val textList = config.getOrNull(SemanticsProperties.Text)
             if (!textList.isNullOrEmpty()) {
                 label = textList.joinToString(", ")
-                if (label == "Assemble to see Blueprint") return // Ignore our own UI
+                if (label == "build to see blueprint ☝\uFE0F") return // Ignore our own UI
                 hasExplicitLabel = true
             }
         }
