@@ -11,6 +11,7 @@ Blueprint Preview is a dev tool for Jetpack Compose that shows you a "blueprint"
 ```kotlin
 dependencies {
     debugImplementation("uk.co.gusward:blueprint-compose-preview:1.0.0")
+    releaseImplementation("uk.co.gusward:blueprint-compose-preview-no-op:1.0.0")
 }
 ```
 
@@ -67,6 +68,7 @@ Add the dependency to your `build.gradle.kts` file:
 ```kotlin
 dependencies {
     debugImplementation("uk.co.gusward:blueprint-compose-preview:1.0.0")
+    releaseImplementation("uk.co.gusward:blueprint-compose-preview-no-op:1.0.0")
 }
 ```
 
