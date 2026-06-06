@@ -9,7 +9,8 @@ fun createArrowPath(
     direction: Direction,
     tip: Offset,
     lengthOfLine: Float,
-) : Path = Path().apply {
+    path: Path = Path(),
+) : Path = path.apply {
 
     val hypotenuseLength = min( lengthOfLine * 0.2f, 15f)
     val baseLength = min( lengthOfLine * 0.15f, 10f)
