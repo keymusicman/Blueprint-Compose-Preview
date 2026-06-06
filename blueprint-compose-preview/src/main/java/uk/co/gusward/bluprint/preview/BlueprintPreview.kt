@@ -156,13 +156,13 @@ fun BlueprintPreview(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "build to see blueprint ☝\uFE0F",
-                            color = Color.White.copy(alpha = backgroundAlpha * 0.5f),
+                            text = "refresh to see blueprint ☝\uFE0F",
+                            color = Color.White,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier
                                 .semantics { testTag = "blueprint_fallback_text" }
-                                .background(SemanticColors.BlueprintBackground.copy(alpha = backgroundAlpha * 0.8f))
-                                .border(1.dp, Color.White.copy(alpha = backgroundAlpha * 0.5f))
+                                .background(SemanticColors.BlueprintBackground)
+                                .border(1.dp, Color.White)
                                 .padding(16.dp)
                         )
                     }
@@ -438,7 +438,7 @@ fun traverseSemanticsNode(node: androidx.compose.ui.semantics.SemanticsNode, ite
             val textList = config.getOrNull(SemanticsProperties.Text)
             if (!textList.isNullOrEmpty()) {
                 label = textList.joinToString(", ")
-                if (label == "build to see blueprint ☝\uFE0F") return // Ignore our own UI
+                if (label == "refresh to see blueprint ☝\uFE0F") return // Ignore our own UI
                 hasExplicitLabel = true
             }
         }
