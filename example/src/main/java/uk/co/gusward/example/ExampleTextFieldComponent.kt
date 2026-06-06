@@ -1,0 +1,48 @@
+package uk.co.gusward.example
+
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import uk.co.gusward.bluprint.preview.BlueprintPreview
+
+@Composable
+fun ExampleTextFieldComponent() {
+    var text by remember { mutableStateOf("") }
+    
+    Box(
+        modifier = Modifier.wrapContentSize()
+            .padding(100.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        TextField(
+            value = text,
+            onValueChange = { text = it },
+            label = { Text("Enter Destination") }
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "1. Normal Preview")
+@Composable
+fun ExampleTextFieldComponentNormalPreview() {
+    ExampleTextFieldComponent()
+}
+
+@Preview(showBackground = true, name = "2. Blueprint Preview")
+@Composable
+fun ExampleTextFieldComponentPreview() {
+    BlueprintPreview {
+        ExampleTextFieldComponent()
+    }
+}

@@ -460,25 +460,44 @@ internal fun traverseSemanticsNode(node: androidx.compose.ui.semantics.Semantics
             }
         }
 
-        // Priority 4: Interactive elements (Buttons, etc.) - Implicit recognition
+        // Priority 4: Interactive elements (Buttons, TextFields, Switches, etc.) - Implicit recognition
         if (!hasExplicitLabel) {
             val role = config.getOrNull(SemanticsProperties.Role)
             val hasClickAction = config.contains(SemanticsActions.OnClick)
+            val isEditableText = config.contains(SemanticsProperties.EditableText)
+            val hasToggleState = config.contains(SemanticsProperties.ToggleableState)
 
-            if (role == Role.Button || hasClickAction) {
+            val isRecognizedInteractive = role == Role.Button || 
+                                          role == Role.Checkbox || 
+                                          role == Role.Switch || 
+                                          role == Role.RadioButton || 
+                                          isEditableText || 
+                                          hasToggleState ||
+                                          hasClickAction
+
+            if (isRecognizedInteractive) {
                 hasExplicitLabel = true
 
-                // Try to find a label from its children (e.g. the Text inside the button)
+                // Try to find a label from its children (e.g. the Text inside the button or label of a TextField)
                 val childText = node.children.firstOrNull {
                     it.config.contains(SemanticsProperties.Text)
                 }?.config?.getOrNull(SemanticsProperties.Text)?.joinToString(", ")
 
-                label = childText ?: (if (role == Role.Button) "Button" else "Clickable")
+                label = when {
+                    childText != null -> childText
+                    isEditableText -> "TextField"
+                    role == Role.Switch || hasToggleState -> "Switch/Toggle"
+                    role == Role.Checkbox -> "Checkbox"
+                    role == Role.RadioButton -> "RadioButton"
+                    role == Role.Button -> "Button"
+                    else -> "Clickable"
+                }
 
                 // Since we've absorbed the meaning into this outer container, suppress labeled children
                 node.children.forEach { child ->
                     if (child.config.contains(SemanticsProperties.Text) ||
-                        child.config.contains(SemanticsProperties.ContentDescription)) {
+                        child.config.contains(SemanticsProperties.ContentDescription) ||
+                        child.config.contains(SemanticsProperties.EditableText)) {
                         suppressedNodes.add(child.id)
                     }
                 }
