@@ -29,9 +29,9 @@ fun MyComponentPreview() {
 
 ## The ramble
 
-Hey, welcome to my project! ☀️
+Hey, welcome to blueprint! ☀️
 
-As the world is becoming more and more AI driven, I thought it would be nice to add some background and a semi disclaimer for the boost AI gave me to finish it.
+As the world is becoming more and more AI driven, I thought it would be nice to add some background and a semi disclaimer for the boost AI gave me to finish this little project.
 
 I started this little project a couple years ago, before AI was a good enough to find its way into my daily dev work, and it was great! without any help from the machine I managed to get the blueprint preview overlay measuring and looking exactly as it does now 😎
 
