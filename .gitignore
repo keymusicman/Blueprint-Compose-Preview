@@ -75,3 +75,6 @@ obj/
 
 # local environment variables
 .env
+
+# Code review graph
+.code-review-graph/
