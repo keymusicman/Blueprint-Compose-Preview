@@ -14,6 +14,5 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "Blueprint"
-include(":app")
 include(":blueprint")
 include(":example")

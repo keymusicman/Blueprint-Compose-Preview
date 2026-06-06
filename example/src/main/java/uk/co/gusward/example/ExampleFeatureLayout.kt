@@ -13,10 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
-import uk.co.gusward.bluprint.items.BlueprintItem
-import uk.co.gusward.bluprint.items.None
-import uk.co.gusward.bluprint.items.Specific
-import uk.co.gusward.bluprint.preview.BlueprintPreview
 import uk.co.gusward.bluprint.preview.PassiveBlueprintPreview
 import uk.co.gusward.bluprint.preview.blueprintId
 
@@ -70,54 +66,6 @@ fun ExampleFeatureLayout(
         ) {
             footer()
         }
-    }
-}
-
-@Preview
-@Composable
-fun ExampleFeatureLayoutActiveBlueprintPreview() {
-    BlueprintPreview { itemUpdated ->
-        ExampleFeatureLayout(
-            hero = {
-                BlueprintItem(
-                    modifier = Modifier
-                        .width(80.dp)
-                        .height(80.dp),
-                    label = "Hero",
-                    itemUpdated = itemUpdated,
-                )
-            },
-            header = {
-                BlueprintItem(
-                    modifier = Modifier
-                        .width(144.dp)
-                        .height(48.dp),
-                    label = "Header",
-                    itemUpdated = itemUpdated,
-                )
-            },
-            body = {
-                BlueprintItem(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(288.dp),
-                    label = "Body",
-                    parentConnectionConfig = Specific(
-                        top = None,
-                    ),
-                    itemUpdated = itemUpdated,
-                )
-            },
-            footer = {
-                BlueprintItem(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp),
-                    label = "Footer",
-                    itemUpdated = itemUpdated,
-                )
-            }
-        )
     }
 }
 

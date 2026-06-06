@@ -11,8 +11,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import uk.co.gusward.bluprint.items.BlueprintItem
-import uk.co.gusward.bluprint.preview.BlueprintPreview
 import uk.co.gusward.bluprint.preview.PassiveBlueprintPreview
 
 @Composable
@@ -33,72 +31,6 @@ fun ExampleSimpleColumn(
 
 @Preview
 @Composable
-fun ExampleSimpleColumnBlueprintPreview() {
-    BlueprintPreview { itemUpdated ->
-        ExampleSimpleColumn(
-            listOf(
-                {
-                    BlueprintItem(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(100.dp),
-                        label = "Item 1",
-                        itemUpdated = itemUpdated,
-                    )
-                },
-                {
-                    BlueprintItem(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(100.dp),
-                        label = "Item 2",
-                        itemUpdated = itemUpdated,
-                    )
-                },
-                {
-                    BlueprintItem(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(100.dp),
-                        label = "Item 3",
-                        itemUpdated = itemUpdated,
-                    )
-                },
-                {
-                    BlueprintItem(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(100.dp),
-                        label = "Item 3",
-                        itemUpdated = itemUpdated,
-                    )
-                },
-                {
-                    BlueprintItem(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(100.dp),
-                        label = "Item 3",
-                        itemUpdated = itemUpdated,
-                    )
-                },
-                {
-                    BlueprintItem(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(100.dp),
-                        label = "Item 3",
-                        itemUpdated = itemUpdated,
-                    )
-                }
-            )
-        )
-    }
-}
-
-
-@Preview
-@Composable
 fun PassiveExampleSimpleColumnBlueprintPreview() {
     PassiveBlueprintPreview {
         ExampleSimpleColumn(
@@ -109,3 +41,4 @@ fun PassiveExampleSimpleColumnBlueprintPreview() {
         )
     }
 }
+
