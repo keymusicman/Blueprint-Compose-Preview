@@ -47,6 +47,10 @@ the rest of this readme was written by AI haha
 
 ## The rest
 
+<p align="center">
+  <img src="ExampleComponentBlueprint.png" width="800" alt="Example Component Blueprint">
+</p>
+
 ## Features
 
 - **📏 Passive Measurement**: No changes required to your existing production code.
