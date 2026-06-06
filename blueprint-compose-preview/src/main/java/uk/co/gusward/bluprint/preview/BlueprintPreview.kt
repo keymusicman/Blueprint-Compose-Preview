@@ -52,9 +52,15 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.runtime.currentCompositeKeyHashCode
+import java.util.LinkedHashMap
 
 // THE SURVIVOR CACHE: IMMUNE TO LAYOUTLIB'S RE-COMPOSITION WIPES
-private var staticBlueprintCache: MutableMap<Long, Map<String, BlueprintItemData>> = mutableMapOf()
+// Bounded to 50 entries to prevent memory leaks in the IDE's long-running JVM
+private val staticBlueprintCache = object : LinkedHashMap<Long, Map<String, BlueprintItemData>>(50, 0.75f, true) {
+    override fun removeEldestEntry(eldest: Map.Entry<Long, Map<String, BlueprintItemData>>): Boolean {
+        return size > 50
+    }
+}
 
 @Composable
 fun BlueprintPreview(

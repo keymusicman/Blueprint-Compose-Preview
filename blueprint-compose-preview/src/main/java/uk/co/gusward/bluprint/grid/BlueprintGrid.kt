@@ -37,9 +37,15 @@ import uk.co.gusward.bluprint.grid.utils.drawBlueprintLineLabel
 import uk.co.gusward.bluprint.items.BlueprintItemData
 import java.text.DecimalFormat
 import kotlin.math.min
+import java.util.LinkedHashMap
 
 // THE SURVIVOR CACHE FOR GRID SIZE: IMMUNE TO LAYOUTLIB'S RE-COMPOSITION WIPES
-private var staticGridSizeCache: MutableMap<Long, Size> = mutableMapOf()
+// Bounded to 50 entries to prevent memory leaks in the IDE's long-running JVM
+private val staticGridSizeCache = object : LinkedHashMap<Long, Size>(50, 0.75f, true) {
+    override fun removeEldestEntry(eldest: Map.Entry<Long, Size>): Boolean {
+        return size > 50
+    }
+}
 
 internal data class BlueprintLineWithLabel(
     val line: BlueprintLine,
