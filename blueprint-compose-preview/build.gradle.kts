@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "uk.co.gusward"
-version = "1.0.0"
+version = "Rev-1.0.0"
 
 android {
     namespace = "uk.co.gusward.blueprint"
