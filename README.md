@@ -21,7 +21,7 @@ import uk.co.gusward.bluprint.preview.BlueprintPreview
 @Preview
 @Composable
 fun MyComponentPreview() {
-    BlueprintPreview {
+    BlueprintPreview { // <-- that's all!
         MyComponent()
     }
 }
