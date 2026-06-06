@@ -99,14 +99,6 @@ publishing {
 }
 
 signing {
-    val signingKeyId = project.findProperty("signing.keyId") as String?
-    val signingKey = project.findProperty("signing.key") as String?
-    val signingPassword = project.findProperty("signing.password") as String?
-    
-    // We try to use memory-based keys if available (e.g. CI), fallback to secring
-    if (signingKeyId != null) {
-        useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
-    }
     sign(publishing.publications["release"])
 }
 

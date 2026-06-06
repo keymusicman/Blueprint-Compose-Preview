@@ -92,13 +92,6 @@ publishing {
 }
 
 signing {
-    val signingKeyId = project.findProperty("signing.keyId") as String?
-    val signingKey = project.findProperty("signing.key") as String?
-    val signingPassword = project.findProperty("signing.password") as String?
-    
-    if (signingKeyId != null) {
-        useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
-    }
     sign(publishing.publications["release"])
 }
 
