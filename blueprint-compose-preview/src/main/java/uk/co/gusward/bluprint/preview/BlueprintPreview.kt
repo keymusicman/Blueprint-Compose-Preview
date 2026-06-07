@@ -415,10 +415,13 @@ internal fun traverseSemanticsNode(node: androidx.compose.ui.semantics.Semantics
                                       hasToggleState ||
                                       hasClickAction
 
+        val hasText = config.contains(SemanticsProperties.Text)
+        val hasContentDescription = config.contains(SemanticsProperties.ContentDescription)
+
         // TextFields visually occupy their full container size (e.g. 56dp), so they need outer bounds.
-        // Other interactive elements (Button, Switch) often have invisible minimum touch targets (48dp),
-        // so we use inner bounds for them.
-        val useInnerCoordinatesForBounds = isRecognizedInteractive && !isEditableText
+        // Other elements (Button, Switch, Text, Image) often have invisible minimum touch targets (48dp)
+        // or padding that we want to see as measurements rather than part of the component's box.
+        val useInnerCoordinatesForBounds = (isRecognizedInteractive || hasText || hasContentDescription) && !isEditableText
 
         val layoutInfo = node.layoutInfo
         val bounds = if (useInnerCoordinatesForBounds) {
