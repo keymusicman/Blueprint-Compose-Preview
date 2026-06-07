@@ -415,48 +415,50 @@ internal fun traverseSemanticsNode(node: androidx.compose.ui.semantics.Semantics
                                       hasToggleState ||
                                       hasClickAction
 
-        val hasText = config.contains(SemanticsProperties.Text)
-        val hasContentDescription = config.contains(SemanticsProperties.ContentDescription)
-
-        // TextFields visually occupy their full container size (e.g. 56dp), so they need outer bounds.
-        // Other elements (Button, Switch, Text, Image) often have invisible minimum touch targets (48dp)
-        // or padding that we want to see as measurements rather than part of the component's box.
-        val useInnerCoordinatesForBounds = (isRecognizedInteractive || hasText || hasContentDescription) && !isEditableText
-
         val layoutInfo = node.layoutInfo
-        val bounds = if (useInnerCoordinatesForBounds) {
-            // For interactive components, use inner layout coordinates to ignore 
-            // implicit minimum touch target expansions (e.g., 48dp).
-            layoutInfo.coordinates.boundsInRoot()
-        } else {
-            // For non-interactive components (like Text) and TextFields, we want the outer bounds
-            // which include padding and layout modifiers.
-            val outerCoordinates = try {
-                val getModifierInfoMethod = layoutInfo.javaClass.getMethod("getModifierInfo")
-                getModifierInfoMethod.isAccessible = true
-                val modifierInfoList = getModifierInfoMethod.invoke(layoutInfo) as List<*>
-                if (modifierInfoList.isNotEmpty()) {
-                    val firstModInfo = modifierInfoList.first()!!
-                    val coordsMethod = firstModInfo.javaClass.getMethod("getCoordinates")
-                    coordsMethod.invoke(firstModInfo) as androidx.compose.ui.layout.LayoutCoordinates
-                } else {
-                    val outerCoordMethod = layoutInfo.javaClass.getMethod("getOuterCoordinator")
-                    outerCoordMethod.isAccessible = true
-                    outerCoordMethod.invoke(layoutInfo) as androidx.compose.ui.layout.LayoutCoordinates
+        val innerCoordinates = layoutInfo.coordinates
+        var visualCoordinates = innerCoordinates
+        
+        try {
+            val getModifierInfoMethod = layoutInfo.javaClass.getMethod("getModifierInfo")
+            getModifierInfoMethod.isAccessible = true
+            val modifierInfoList = getModifierInfoMethod.invoke(layoutInfo) as List<*>
+            
+            // The list contains modifiers in the order they were applied (Outer -> Inner).
+            // We want to scan from Inner to Outer to find the "visual" boundary.
+            for (i in modifierInfoList.indices.reversed()) {
+                val modInfo = modifierInfoList[i]!!
+                val getModifierMethod = modInfo.javaClass.getMethod("getModifier")
+                val modifier = getModifierMethod.invoke(modInfo)
+                val modClassName = modifier.javaClass.name
+                
+                val isVisual = modClassName.contains("Background") || 
+                               modClassName.contains("Border") ||
+                               modClassName.contains("Shadow")
+                
+                val isBoundary = modClassName.contains("Padding") || 
+                                 modClassName.contains("minimumTouchTargetSize") ||
+                                 modClassName.contains("MinimumTouchTarget")
+
+                if (isVisual) {
+                    val getCoordsMethod = modInfo.javaClass.getMethod("getCoordinates")
+                    visualCoordinates = getCoordsMethod.invoke(modInfo) as androidx.compose.ui.layout.LayoutCoordinates
                 }
-            } catch (e: Exception) {
-                try {
-                    val outerCoordMethod = layoutInfo.javaClass.getMethod("getOuterCoordinator")
-                    outerCoordMethod.isAccessible = true
-                    outerCoordMethod.invoke(layoutInfo) as androidx.compose.ui.layout.LayoutCoordinates
-                } catch (e2: Exception) {
-                    layoutInfo.coordinates
+
+                if (isBoundary) {
+                    // We've hit a boundary (like padding) that we want to show as a measurement.
+                    // Stop expanding the visual box here.
+                    break
                 }
             }
-            outerCoordinates.boundsInRoot()
+        } catch (e: Exception) {
+            // Fallback to inner if reflection fails
+            visualCoordinates = innerCoordinates
         }
 
-        android.util.Log.d("PassiveBlueprint", "Node $id: bounds=$bounds, semanticBounds=${node.boundsInRoot}, isInteractive=$isRecognizedInteractive")
+        val bounds = visualCoordinates.boundsInRoot()
+
+        android.util.Log.d("PassiveBlueprint", "Node $id: bounds=$bounds, semanticBounds=${node.boundsInRoot}")
 
         var label = "Node $id"
         var hasExplicitLabel = false
