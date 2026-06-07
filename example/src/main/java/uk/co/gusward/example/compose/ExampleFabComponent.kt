@@ -3,10 +3,8 @@ package uk.co.gusward.example.compose
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,7 +22,7 @@ fun ExampleFabComponent() {
         FloatingActionButton(
             onClick = { /* do nothing */ },
         ) {
-            Icon(Icons.Filled.Add, contentDescription = "Add")
+            Text("+")
         }
     }
 }
