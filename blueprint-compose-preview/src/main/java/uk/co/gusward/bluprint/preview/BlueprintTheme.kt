@@ -12,6 +12,8 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.LineHeightStyle
 import uk.co.gusward.bluprint.constants.SemanticColors
 
+import androidx.compose.material3.LocalTextStyle
+
 @Composable
 internal fun BlueprintTheme(
     backgroundAlpha: Float = 1.0f,
@@ -27,8 +29,10 @@ internal fun BlueprintTheme(
                 modifier = Modifier.background(SemanticColors.BlueprintBackground.copy(alpha = backgroundAlpha))
             ) {
                 ProvideTextStyle(
-                    value = TextStyle(
-                        color = SemanticColors.BlueprintAccent
+                    value = LocalTextStyle.current.merge(
+                        TextStyle(
+                            color = SemanticColors.BlueprintAccent
+                        )
                     )
                 ) {
                     content()
