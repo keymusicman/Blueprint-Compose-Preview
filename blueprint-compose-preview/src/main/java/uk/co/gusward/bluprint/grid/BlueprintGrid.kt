@@ -68,7 +68,7 @@ internal fun BlueprintGrid(
     val density = LocalDensity.current
 
     Box(
-        modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
+        modifier = Modifier.fillMaxSize().background(uk.co.gusward.bluprint.constants.SemanticColors.BlueprintBackground)
     ) {
         val compositeKey = currentCompositeKeyHashCode
         var size by remember { mutableStateOf(staticGridSizeCache[compositeKey] ?: Size.Zero) }
@@ -198,7 +198,7 @@ internal fun BlueprintGrid(
         /* display content FIRST so measuring lines draw over top of it */
         content()
 
-        val backgroundColor = MaterialTheme.colorScheme.background
+        val backgroundColor = uk.co.gusward.bluprint.constants.SemanticColors.BlueprintBackground
 
         val measuredLineWidth = 4f
         val minimumScale = 0.05f
