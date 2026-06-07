@@ -22,6 +22,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.ClipOp
@@ -116,6 +117,7 @@ fun BlueprintPreview(
 
         Box(
             modifier = Modifier
+                .clipToBounds()
                 .onGloballyPositioned { layoutCoordinates ->
                     if (layoutCoordinates.size.width > 0 && layoutCoordinates.size.height > 0) {
                         val newMap = extractBlueprintItemsFromSemantics(view)
