@@ -1,5 +1,6 @@
 package uk.co.gusward.example.compose
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -32,6 +33,7 @@ fun ExampleRadioButtonComponent() {
             radioOptions.forEach { text ->
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.padding(vertical = 4.dp)
                 ) {
                     RadioButton(
@@ -39,8 +41,7 @@ fun ExampleRadioButtonComponent() {
                         onClick = { selectedOption = text }
                     )
                     Text(
-                        text = text,
-                        modifier = Modifier.padding(start = 8.dp)
+                        text = text
                     )
                 }
             }

@@ -1,5 +1,6 @@
 package uk.co.gusward.example.compose
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -26,13 +27,15 @@ fun ExampleCheckboxComponent() {
             .padding(100.dp),
         contentAlignment = Alignment.Center,
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
             Checkbox(
                 checked = checked,
                 onCheckedChange = { checked = it }
             )
             Text(
-                modifier = Modifier.padding(start = 8.dp),
                 text = "Accept terms"
             )
         }

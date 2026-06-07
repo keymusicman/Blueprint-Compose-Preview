@@ -1,5 +1,6 @@
 package uk.co.gusward.example.compose
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -26,10 +27,12 @@ fun ExampleSwitchComponent() {
             .padding(100.dp),
         contentAlignment = Alignment.Center,
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
             Text("Enable feature")
             Switch(
-                modifier = Modifier.padding(start = 16.dp),
                 checked = checked,
                 onCheckedChange = { checked = it }
             )
