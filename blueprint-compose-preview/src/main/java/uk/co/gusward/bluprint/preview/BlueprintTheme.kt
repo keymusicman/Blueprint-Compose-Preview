@@ -28,14 +28,7 @@ internal fun BlueprintTheme(
             ) {
                 ProvideTextStyle(
                     value = TextStyle(
-                        color = SemanticColors.BlueprintAccent,
-                        platformStyle = PlatformTextStyle(
-                            includeFontPadding = false
-                        ),
-                        lineHeightStyle = LineHeightStyle(
-                            alignment = LineHeightStyle.Alignment.Center,
-                            trim = LineHeightStyle.Trim.Both
-                        )
+                        color = SemanticColors.BlueprintAccent
                     )
                 ) {
                     content()
