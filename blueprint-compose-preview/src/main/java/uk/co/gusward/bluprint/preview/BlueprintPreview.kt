@@ -406,6 +406,7 @@ internal fun traverseSemanticsNode(node: androidx.compose.ui.semantics.Semantics
         val hasClickAction = config.contains(SemanticsActions.OnClick)
         val isEditableText = config.contains(SemanticsProperties.EditableText)
         val hasToggleState = config.contains(SemanticsProperties.ToggleableState)
+        val isSlider = config.contains(SemanticsProperties.ProgressBarRangeInfo)
 
         val isRecognizedInteractive = role == Role.Button || 
                                       role == Role.Checkbox || 
@@ -413,15 +414,16 @@ internal fun traverseSemanticsNode(node: androidx.compose.ui.semantics.Semantics
                                       role == Role.RadioButton || 
                                       isEditableText || 
                                       hasToggleState ||
-                                      hasClickAction
+                                      hasClickAction ||
+                                      isSlider
 
         val layoutInfo = node.layoutInfo
         
-        // TextFields visually occupy their full container size (e.g. 56dp), so they need outer bounds.
+        // TextFields and Sliders visually occupy their full container size, so they need outer bounds.
         // Other interactive elements (Button, Switch, Checkbox) have invisible minimum touch targets (48dp),
         // so we use inner bounds for them.
         // Everything else (Text, Images, Layouts) uses outer bounds to correctly capture backgrounds and paddings.
-        val useInnerCoordinatesForBounds = isRecognizedInteractive && !isEditableText
+        val useInnerCoordinatesForBounds = isRecognizedInteractive && !isEditableText && !isSlider
 
         val bounds = if (useInnerCoordinatesForBounds) {
             layoutInfo.coordinates.boundsInRoot()
@@ -498,6 +500,7 @@ internal fun traverseSemanticsNode(node: androidx.compose.ui.semantics.Semantics
                 label = when {
                     childText != null -> childText
                     isEditableText -> "TextField"
+                    isSlider -> "Slider"
                     role == Role.Switch || hasToggleState -> "Switch/Toggle"
                     role == Role.Checkbox -> "Checkbox"
                     role == Role.RadioButton -> "RadioButton"
