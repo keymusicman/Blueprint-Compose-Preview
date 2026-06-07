@@ -1,10 +1,11 @@
-package uk.co.gusward.example
+package uk.co.gusward.example.compose
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -17,32 +18,35 @@ import androidx.compose.ui.unit.dp
 import uk.co.gusward.bluprint.preview.BlueprintPreview
 
 @Composable
-fun ExampleTextFieldComponent() {
-    var text by remember { mutableStateOf("") }
+fun ExampleSwitchComponent() {
+    var checked by remember { mutableStateOf(true) }
     
     Box(
         modifier = Modifier.wrapContentSize()
             .padding(100.dp),
         contentAlignment = Alignment.Center,
     ) {
-        TextField(
-            value = text,
-            onValueChange = { text = it },
-            label = { Text("Enter Destination") }
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text("Enable feature")
+            Switch(
+                modifier = Modifier.padding(start = 16.dp),
+                checked = checked,
+                onCheckedChange = { checked = it }
+            )
+        }
     }
 }
 
 @Preview(showBackground = true, name = "1. Normal Preview")
 @Composable
-fun ExampleTextFieldComponentNormalPreview() {
-    ExampleTextFieldComponent()
+fun ExampleSwitchComponentNormalPreview() {
+    ExampleSwitchComponent()
 }
 
 @Preview(showBackground = true, name = "2. Blueprint Preview")
 @Composable
-fun ExampleTextFieldComponentPreview() {
+fun ExampleSwitchComponentPreview() {
     BlueprintPreview {
-        ExampleTextFieldComponent()
+        ExampleSwitchComponent()
     }
 }

@@ -1,4 +1,4 @@
-package uk.co.gusward.example
+package uk.co.gusward.example.custom
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box

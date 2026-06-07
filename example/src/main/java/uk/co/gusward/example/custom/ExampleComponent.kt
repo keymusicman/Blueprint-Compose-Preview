@@ -1,4 +1,4 @@
-package uk.co.gusward.example
+package uk.co.gusward.example.custom
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import uk.co.gusward.bluprint.preview.BlueprintPreview
 import uk.co.gusward.bluprint.preview.blueprintId
+import uk.co.gusward.example.R
 
 @Composable
 fun ExampleComponent(

@@ -397,40 +397,60 @@ internal fun traverseSemanticsNode(node: androidx.compose.ui.semantics.Semantics
     try {
         val id = node.id
         
-        // Use layoutInfo to get TRUE physical bounds.
+        val config = node.config
+
+        // Pre-determine interactivity to decide which bounds to use
+        val role = config.getOrNull(SemanticsProperties.Role)
+        val hasClickAction = config.contains(SemanticsActions.OnClick)
+        val isEditableText = config.contains(SemanticsProperties.EditableText)
+        val hasToggleState = config.contains(SemanticsProperties.ToggleableState)
+
+        val isRecognizedInteractive = role == Role.Button || 
+                                      role == Role.Checkbox || 
+                                      role == Role.Switch || 
+                                      role == Role.RadioButton || 
+                                      isEditableText || 
+                                      hasToggleState ||
+                                      hasClickAction
+
         val layoutInfo = node.layoutInfo
-        val outerCoordinates = try {
-            val getModifierInfoMethod = layoutInfo.javaClass.getMethod("getModifierInfo")
-            getModifierInfoMethod.isAccessible = true
-            val modifierInfoList = getModifierInfoMethod.invoke(layoutInfo) as List<*>
-            if (modifierInfoList.isNotEmpty()) {
-                val firstModInfo = modifierInfoList.first()!!
-                val coordsMethod = firstModInfo.javaClass.getMethod("getCoordinates")
-                coordsMethod.invoke(firstModInfo) as androidx.compose.ui.layout.LayoutCoordinates
-            } else {
-                val outerCoordMethod = layoutInfo.javaClass.getMethod("getOuterCoordinator")
-                outerCoordMethod.isAccessible = true
-                outerCoordMethod.invoke(layoutInfo) as androidx.compose.ui.layout.LayoutCoordinates
+        val bounds = if (isRecognizedInteractive) {
+            // For interactive components, use inner layout coordinates to ignore 
+            // implicit minimum touch target expansions (e.g., 48dp).
+            layoutInfo.coordinates.boundsInRoot()
+        } else {
+            // For non-interactive components (like Text), we want the outer bounds
+            // which include padding and layout modifiers.
+            val outerCoordinates = try {
+                val getModifierInfoMethod = layoutInfo.javaClass.getMethod("getModifierInfo")
+                getModifierInfoMethod.isAccessible = true
+                val modifierInfoList = getModifierInfoMethod.invoke(layoutInfo) as List<*>
+                if (modifierInfoList.isNotEmpty()) {
+                    val firstModInfo = modifierInfoList.first()!!
+                    val coordsMethod = firstModInfo.javaClass.getMethod("getCoordinates")
+                    coordsMethod.invoke(firstModInfo) as androidx.compose.ui.layout.LayoutCoordinates
+                } else {
+                    val outerCoordMethod = layoutInfo.javaClass.getMethod("getOuterCoordinator")
+                    outerCoordMethod.isAccessible = true
+                    outerCoordMethod.invoke(layoutInfo) as androidx.compose.ui.layout.LayoutCoordinates
+                }
+            } catch (e: Exception) {
+                try {
+                    val outerCoordMethod = layoutInfo.javaClass.getMethod("getOuterCoordinator")
+                    outerCoordMethod.isAccessible = true
+                    outerCoordMethod.invoke(layoutInfo) as androidx.compose.ui.layout.LayoutCoordinates
+                } catch (e2: Exception) {
+                    layoutInfo.coordinates
+                }
             }
-        } catch (e: Exception) {
-            try {
-                val outerCoordMethod = layoutInfo.javaClass.getMethod("getOuterCoordinator")
-                outerCoordMethod.isAccessible = true
-                outerCoordMethod.invoke(layoutInfo) as androidx.compose.ui.layout.LayoutCoordinates
-            } catch (e2: Exception) {
-                layoutInfo.coordinates
-            }
+            outerCoordinates.boundsInRoot()
         }
-        
-        val bounds = outerCoordinates.boundsInRoot()
-        
-        android.util.Log.d("PassiveBlueprint", "Node $id: bounds=$bounds, layoutInfoBounds=${layoutInfo.coordinates.boundsInRoot()}, semanticBounds=${node.boundsInRoot}")
+
+        android.util.Log.d("PassiveBlueprint", "Node $id: bounds=$bounds, semanticBounds=${node.boundsInRoot}, isInteractive=$isRecognizedInteractive")
 
         var label = "Node $id"
         var hasExplicitLabel = false
         
-        val config = node.config
-
         // Priority 1: TestTag (includes blueprintId) - Developers use this for explicit naming
         val testTag = config.getOrNull(SemanticsProperties.TestTag)
         if (testTag != null) {
@@ -462,19 +482,6 @@ internal fun traverseSemanticsNode(node: androidx.compose.ui.semantics.Semantics
 
         // Priority 4: Interactive elements (Buttons, TextFields, Switches, etc.) - Implicit recognition
         if (!hasExplicitLabel) {
-            val role = config.getOrNull(SemanticsProperties.Role)
-            val hasClickAction = config.contains(SemanticsActions.OnClick)
-            val isEditableText = config.contains(SemanticsProperties.EditableText)
-            val hasToggleState = config.contains(SemanticsProperties.ToggleableState)
-
-            val isRecognizedInteractive = role == Role.Button || 
-                                          role == Role.Checkbox || 
-                                          role == Role.Switch || 
-                                          role == Role.RadioButton || 
-                                          isEditableText || 
-                                          hasToggleState ||
-                                          hasClickAction
-
             if (isRecognizedInteractive) {
                 hasExplicitLabel = true
 

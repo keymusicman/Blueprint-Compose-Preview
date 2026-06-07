@@ -1,4 +1,4 @@
-package uk.co.gusward.example
+package uk.co.gusward.example.logo
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
