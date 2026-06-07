@@ -432,13 +432,15 @@ internal fun traverseSemanticsNode(node: androidx.compose.ui.semantics.Semantics
                 val modifier = getModifierMethod.invoke(modInfo)
                 val modClassName = modifier.javaClass.name
                 
-                val isVisual = modClassName.contains("Background") || 
-                               modClassName.contains("Border") ||
-                               modClassName.contains("Shadow")
+                android.util.Log.d("PassiveBlueprint", "Modifier traversal: node=$id, class=$modClassName")
                 
-                val isBoundary = modClassName.contains("Padding") || 
-                                 modClassName.contains("minimumTouchTargetSize") ||
-                                 modClassName.contains("MinimumTouchTarget")
+                val isVisual = modClassName.contains("Background", ignoreCase = true) || 
+                               modClassName.contains("Border", ignoreCase = true) ||
+                               modClassName.contains("Shadow", ignoreCase = true)
+                
+                val isBoundary = modClassName.contains("Padding", ignoreCase = true) || 
+                                 modClassName.contains("minimumTouchTargetSize", ignoreCase = true) ||
+                                 modClassName.contains("MinimumTouchTarget", ignoreCase = true)
 
                 if (isVisual) {
                     val getCoordsMethod = modInfo.javaClass.getMethod("getCoordinates")
