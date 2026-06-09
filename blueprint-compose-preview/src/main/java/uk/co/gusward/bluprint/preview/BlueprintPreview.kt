@@ -67,7 +67,7 @@ private val staticBlueprintCache = object : LinkedHashMap<Long, Map<String, Blue
 fun BlueprintPreview(
     backgroundAlpha: Float = 1f,
     contentAlpha: Float = 1f,
-    showInternalItems: Boolean = true,
+    showInternalItems: Boolean = false,
     content: @Composable () -> Unit
 ) {
     BlueprintTheme(backgroundAlpha = backgroundAlpha) {
