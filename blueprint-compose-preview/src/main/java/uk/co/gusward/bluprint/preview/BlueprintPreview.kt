@@ -67,6 +67,7 @@ private val staticBlueprintCache = object : LinkedHashMap<Long, Map<String, Blue
 fun BlueprintPreview(
     backgroundAlpha: Float = 1f,
     contentAlpha: Float = 1f,
+    showInternalItems: Boolean = true,
     content: @Composable () -> Unit
 ) {
     BlueprintTheme(backgroundAlpha = backgroundAlpha) {
@@ -79,11 +80,11 @@ fun BlueprintPreview(
         val isInspectionMode = LocalInspectionMode.current
 
         // This effect acts as a debounce/recovery mechanism.
-        DisposableEffect(view) {
+        DisposableEffect(view, showInternalItems) {
             val listener = ViewTreeObserver.OnGlobalLayoutListener {
                 if (view.width > 0 && view.height > 0) {
                     try {
-                        val newMap = extractBlueprintItemsFromSemantics(view)
+                        val newMap = extractBlueprintItemsFromSemantics(view, showInternalItems)
                         if (newMap.isNotEmpty() && newMap != blueprintItemDataState) {
                             blueprintItemDataState = newMap
                             staticBlueprintCache[compositeKey] = newMap // Anchor to cache
@@ -102,7 +103,7 @@ fun BlueprintPreview(
         // CRITICAL IDE HACK: Forcing a synchronous semantics extraction directly during the Compose phase.
         if (isInspectionMode) {
             try {
-                val immediateMap = extractBlueprintItemsFromSemantics(view)
+                val immediateMap = extractBlueprintItemsFromSemantics(view, showInternalItems)
                 if (immediateMap.isNotEmpty() && immediateMap != blueprintItemDataState) {
                     blueprintItemDataState = immediateMap
                     staticBlueprintCache[compositeKey] = immediateMap // Anchor to cache
@@ -120,7 +121,7 @@ fun BlueprintPreview(
                 .clipToBounds()
                 .onGloballyPositioned { layoutCoordinates ->
                     if (layoutCoordinates.size.width > 0 && layoutCoordinates.size.height > 0) {
-                        val newMap = extractBlueprintItemsFromSemantics(view)
+                        val newMap = extractBlueprintItemsFromSemantics(view, showInternalItems)
                         if (newMap.isNotEmpty() && newMap != blueprintItemDataState) {
                             blueprintItemDataState = newMap
                             staticBlueprintCache[compositeKey] = newMap
@@ -145,10 +146,10 @@ fun BlueprintPreview(
                 ) {
                 if (blueprintItemDataState.isEmpty()) {
                     // Fallback state...
-                    DisposableEffect(view) {
+                    DisposableEffect(view, showInternalItems) {
                         val listener = ViewTreeObserver.OnPreDrawListener {
                             try {
-                                val recoveredMap = extractBlueprintItemsFromSemantics(view)
+                                val recoveredMap = extractBlueprintItemsFromSemantics(view, showInternalItems)
                                 if (recoveredMap.isNotEmpty() && recoveredMap != blueprintItemDataState) {
                                     blueprintItemDataState = recoveredMap
                                     staticBlueprintCache[compositeKey] = recoveredMap
@@ -334,7 +335,7 @@ private fun findAndroidComposeView(view: View): View? {
 // A thread-local or temporary set to track nodes that should be ignored in the current traversal
 private val suppressedNodes = mutableSetOf<Int>()
 
-internal fun extractBlueprintItemsFromSemantics(view: View): Map<String, BlueprintItemData> {
+internal fun extractBlueprintItemsFromSemantics(view: View, showInternalItems: Boolean = true): Map<String, BlueprintItemData> {
     val items = mutableMapOf<String, BlueprintItemData>()
     suppressedNodes.clear() 
 
@@ -362,7 +363,17 @@ internal fun extractBlueprintItemsFromSemantics(view: View): Map<String, Bluepri
                 semanticsOwner.rootSemanticsNode
             }
             traverseSemanticsNode(rootNode, items, screenSize)
-            return items
+            
+            return if (showInternalItems) {
+                items
+            } else {
+                items.filter { entry ->
+                    val currentItem = entry.value
+                    items.values.none { other -> 
+                        other != currentItem && other.contains(currentItem)
+                    }
+                }
+            }
         } catch (e: Exception) {
             android.util.Log.e("PassiveBlueprint", "Direct extraction failed", e)
         }
@@ -394,7 +405,17 @@ internal fun extractBlueprintItemsFromSemantics(view: View): Map<String, Bluepri
             android.util.Log.e("PassiveBlueprint", "Fallback extraction failed", ex)
         }
     }
-    return items
+    
+    return if (showInternalItems) {
+        items
+    } else {
+        items.filter { entry ->
+            val currentItem = entry.value
+            items.values.none { other -> 
+                other != currentItem && other.contains(currentItem)
+            }
+        }
+    }
 }
 
 internal fun traverseSemanticsNode(node: androidx.compose.ui.semantics.SemanticsNode, items: MutableMap<String, BlueprintItemData>, screenSize: Size) {

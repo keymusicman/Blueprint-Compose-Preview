@@ -106,18 +106,18 @@ The `BlueprintPreview` composable accepts parameters to tune the visual appearan
 | :--- | :--- | :--- | :--- |
 | `backgroundAlpha` | `Float` | `1.0f` | Transparency of the blueprint grid and labels. |
 | `contentAlpha` | `Float` | `1.0f` | Transparency of your actual content underneath the blueprint. |
+| `showInternalItems` | `Boolean` | `true` | When `false`, hides nested blueprint items, showing only the top-level containers/widgets. |
 
-Example with transparency:
+Example with filtered internal items:
 
 ```kotlin
 @Preview
 @Composable
-fun GhostlyPreview() {
+fun SimplePreview() {
     BlueprintPreview(
-        backgroundAlpha = 0.6f,
-        contentAlpha = 0.3f
+        showInternalItems = false
     ) {
-        MyComponent()
+        MyComplexComponent()
     }
 }
 ```
