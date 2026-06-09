@@ -58,4 +58,11 @@ internal data class BlueprintItemData(
 
         return otherIsAbove && otherInLineOfSight
     }
+
+    fun contains(other: BlueprintItemData): Boolean {
+        return other.position.x >= position.x &&
+                other.position.y >= position.y &&
+                (other.position.x + other.size.width) <= (position.x + size.width) &&
+                (other.position.y + other.size.height) <= (position.y + size.height)
+    }
 }

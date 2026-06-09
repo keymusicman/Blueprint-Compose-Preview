@@ -72,7 +72,7 @@ internal fun calculateBlueprintLines(
 
             val intersectsAnyBlueprintItem = validBlueprintItems
                 .filter {
-                    it.value != currentEntry.value && it.value != other
+                    it.value != currentEntry.value && it.value != other && !it.value.contains(currentEntry.value)
                 }
                 .any {
                     blueprintLine.intersects(it.value)
@@ -140,7 +140,7 @@ internal fun calculateBlueprintLines(
 
             val intersectsAnyBlueprintItem = validBlueprintItems
                 .filter {
-                    it.value != currentEntry.value && it.value != other
+                    it.value != currentEntry.value && it.value != other && !it.value.contains(currentEntry.value)
                 }
                 .any {
                     blueprintLine.intersects(it.value)
@@ -186,7 +186,7 @@ internal fun calculateBlueprintLines(
             )
 
             val intersectsAnyBlueprintItem = validBlueprintItems
-                .filter { it.value != currentEntry.value }
+                .filter { it.value != currentEntry.value && !it.value.contains(currentEntry.value) }
                 .any { blueprintLine.intersects(it.value) }
 
             if (!intersectsAnyBlueprintItem) {
@@ -225,7 +225,7 @@ internal fun calculateBlueprintLines(
             )
 
             val intersectsAnyBlueprintItem = validBlueprintItems
-                .filter { it.value != currentEntry.value }
+                .filter { it.value != currentEntry.value && !it.value.contains(currentEntry.value) }
                 .any { blueprintLine.intersects(it.value) }
 
             if (!intersectsAnyBlueprintItem) {
@@ -264,7 +264,7 @@ internal fun calculateBlueprintLines(
             )
 
             val intersectsAnyBlueprintItem = validBlueprintItems
-                .filter { it.value != currentEntry.value }
+                .filter { it.value != currentEntry.value && !it.value.contains(currentEntry.value) }
                 .any { blueprintLine.intersects(it.value) }
 
             if (!intersectsAnyBlueprintItem) {
@@ -303,7 +303,7 @@ internal fun calculateBlueprintLines(
             )
 
             val intersectsAnyBlueprintItem = validBlueprintItems
-                .filter { it.value != currentEntry.value }
+                .filter { it.value != currentEntry.value && !it.value.contains(currentEntry.value) }
                 .any { blueprintLine.intersects(it.value) }
 
             if (!intersectsAnyBlueprintItem) {

@@ -338,6 +338,8 @@ internal fun extractBlueprintItemsFromSemantics(view: View): Map<String, Bluepri
     val items = mutableMapOf<String, BlueprintItemData>()
     suppressedNodes.clear() 
 
+    val screenSize = Size(view.width.toFloat(), view.height.toFloat())
+
     var composeView: ViewRootForTest? = null
     var currentView: View? = view
     while (currentView != null) {
@@ -359,7 +361,7 @@ internal fun extractBlueprintItemsFromSemantics(view: View): Map<String, Bluepri
             } catch (e: Exception) {
                 semanticsOwner.rootSemanticsNode
             }
-            traverseSemanticsNode(rootNode, items)
+            traverseSemanticsNode(rootNode, items, screenSize)
             return items
         } catch (e: Exception) {
             android.util.Log.e("PassiveBlueprint", "Direct extraction failed", e)
@@ -383,7 +385,7 @@ internal fun extractBlueprintItemsFromSemantics(view: View): Map<String, Bluepri
                         rootSemanticsNodeMethod.isAccessible = true
                         rootSemanticsNodeMethod.invoke(semanticsOwner) as androidx.compose.ui.semantics.SemanticsNode
                     }
-                    traverseSemanticsNode(rootNode, items)
+                    traverseSemanticsNode(rootNode, items, screenSize)
                 }
             } else {
                 android.util.Log.e("PassiveBlueprint", "Could not find AndroidComposeView in hierarchy via reflection")
@@ -395,7 +397,7 @@ internal fun extractBlueprintItemsFromSemantics(view: View): Map<String, Bluepri
     return items
 }
 
-internal fun traverseSemanticsNode(node: androidx.compose.ui.semantics.SemanticsNode, items: MutableMap<String, BlueprintItemData>) {
+internal fun traverseSemanticsNode(node: androidx.compose.ui.semantics.SemanticsNode, items: MutableMap<String, BlueprintItemData>, screenSize: Size) {
     try {
         val id = node.id
         
@@ -479,6 +481,13 @@ internal fun traverseSemanticsNode(node: androidx.compose.ui.semantics.Semantics
             cc.contains(SemanticsProperties.ProgressBarRangeInfo) ||
             cc.contains(SemanticsActions.OnClick)
         }
+        
+        // Ignore "The Stage" - if a molecule occupies nearly the full screen, it's just a background container
+        val isTheStage = if (hasVisualIdentity) {
+            val nodeArea = bounds.width * bounds.height
+            val rootArea = screenSize.width * screenSize.height
+            (nodeArea / rootArea) > 0.95f
+        } else false
 
         var label = "Node $id"
         var hasExplicitLabel = false
@@ -545,7 +554,7 @@ internal fun traverseSemanticsNode(node: androidx.compose.ui.semantics.Semantics
         }
 
         // Priority 5: Molecule Detection (Layouts with Background + SDK children)
-        if (!hasExplicitLabel && hasVisualIdentity && hasSdkChildren) {
+        if (!hasExplicitLabel && hasVisualIdentity && hasSdkChildren && !isTheStage) {
             hasExplicitLabel = true
             
             // Try to find a hint for the label from the first text child
@@ -598,7 +607,7 @@ internal fun traverseSemanticsNode(node: androidx.compose.ui.semantics.Semantics
         // ALWAYS traverse children
         val children = node.children
         for (child in children) {
-            traverseSemanticsNode(child, items)
+            traverseSemanticsNode(child, items, screenSize)
         }
     } catch (e: Exception) {
         android.util.Log.e("PassiveBlueprint", "Failed traversing node", e)
