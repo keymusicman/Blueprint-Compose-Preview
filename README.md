@@ -124,7 +124,12 @@ fun GhostlyPreview() {
 
 ## How it Works
 
-Blueprint Preview uses the Compose Semantics tree to discover and measure layout nodes. It injects a custom `Canvas` overlay that renders the blueprint aesthetics on top of your content. It includes specific optimizations to handle Android Studio's `Layoutlib` re-composition cycles, ensuring the blueprint remains visible even when zooming or interacting with the preview.
+Blueprint Preview works by passively traversing the **Compose Semantics Tree** to identify and measure layout nodes. Unlike standard inspection tools, it uses a unique "visual identity" logic to determine which bounds to render:
+
+- **Interactive Bounds**: For interactive components like `Button`, `Switch`, and `Checkbox`, the library uses **inner layout coordinates**. This allows it to strip away the implicit 48dp minimum touch targets that Jetpack Compose adds, showing you the actual visible size of the widget.
+- **Visual Bounds**: For non-interactive components like `Text`, `Image`, or custom containers, the library uses **outer layout coordinates**. This ensures that modifiers like `Modifier.background()` or `Modifier.padding()` are correctly captured as part of the component's visual footprint.
+- **Passive Discovery**: It automatically extracts labels from your `Text` content, `ContentDescription`, or `testTag` properties. No manual tagging is required for most standard layouts.
+- **IDE Resilience**: It includes a "Survivor Cache" that anchors measured data to the Compose composite key, ensuring the blueprint doesn't disappear during Android Studio's frequent `Layoutlib` re-composition wipes or zoom operations.
 
 ---
 
