@@ -16,9 +16,6 @@ dependencies {
 ```
 
 ```kotlin
-import androidx.compose.ui.tooling.preview.Preview
-import uk.co.gusward.bluprint.preview.BlueprintPreview
-
 @Preview
 @Composable
 fun MyComponentPreview() {
@@ -32,17 +29,17 @@ fun MyComponentPreview() {
 
 Hey!
 
-As the world is becoming more and more AI driven, I thought it would be nice to add some background on the roots of this project.
+Thought it would be nice to add some quick background on the roots of this little project.
 
-I started the idea a couple years ago, way before AI was good enough to find its way into my daily dev work, and it was great! without any help from the robot I managed to get the blueprint preview overlay measuring and looking exactly as it does now 😎
+I started the idea a couple years ago, and wrote all of the blueprint measurement and rendering logic by hand before LLM agents became part of my daily dev work.
 
-It was never released back then partly because I didn't have time, but mainly because of practicality. What I originally built required you had to wrap every individual component in your composable with a `BlueprintItem { }`, which the grid then used to take its measurement.
+Originally it worked by the user / dev wrapping every component with a `BlueprintItem {}`, which allowed the grid to easily find and render it. This worked and it looked great! But I knew the extra dev friction would make it annoying to use. I also knew the tree parsing logic to make it passive would take a while to perfect, and to be honest it sounded boring, so I parked it.
 
-With the help of AI the project has become far more usefull and frictionless - the blueprint is now completely passive, so with just a one line wrapper around your component you get a fully measured blueprint in Android Studio which you can compare with designs at a glance.
+Recently with the help of Gemini I revived the project, enabling me to very quickly add the dense tree parsing logic to make the blueprint a completely passive one-liner.
 
 So while the majority of the project was hand made, this final push has been massively boosted by AI, and completed in just a couple of days 🚀
 
-Hope you enjoy! the rest of this readme was written by AI haha
+Hope you find it useful! (the rest of this readme was written by AI haha)
 
 \- Gus
 
@@ -79,9 +76,6 @@ dependencies {
 Simply wrap your Composable in a `BlueprintPreview` block inside your `@Preview` function:
 
 ```kotlin
-import androidx.compose.ui.tooling.preview.Preview
-import uk.co.gusward.bluprint.preview.BlueprintPreview
-
 @Preview
 @Composable
 fun MyComponentPreview() {
@@ -96,8 +90,6 @@ fun MyComponentPreview() {
 By default, the library tries to identify components using their text or content descriptions. For more complex layouts or to give a specific name to a container, you can use the `blueprintId` modifier:
 
 ```kotlin
-import uk.co.gusward.bluprint.preview.blueprintId
-
 @Composable
 fun MyComplexLayout() {
     Column(modifier = Modifier.blueprintId("MainContainer")) {
