@@ -455,6 +455,31 @@ internal fun traverseSemanticsNode(node: androidx.compose.ui.semantics.Semantics
 
         android.util.Log.d("PassiveBlueprint", "Node $id: bounds=$bounds, semanticBounds=${node.boundsInRoot}, isInteractive=$isRecognizedInteractive")
 
+        // Molecule Detection: Containers with backgrounds/borders and SDK children
+        val hasVisualIdentity = try {
+            val getModifierInfoMethod = layoutInfo.javaClass.getMethod("getModifierInfo")
+            getModifierInfoMethod.isAccessible = true
+            val modifierInfoList = getModifierInfoMethod.invoke(layoutInfo) as List<*>
+            modifierInfoList.any { modInfo ->
+                val getModifierMethod = modInfo?.javaClass?.getMethod("getModifier")
+                val modifier = getModifierMethod?.invoke(modInfo)
+                val name = modifier?.javaClass?.name ?: ""
+                name.contains("Background", ignoreCase = true) || name.contains("Border", ignoreCase = true)
+            }
+        } catch (e: Exception) {
+            false
+        }
+
+        val hasSdkChildren = node.children.any { child ->
+            val cc = child.config
+            cc.contains(SemanticsProperties.Text) ||
+            cc.contains(SemanticsProperties.ContentDescription) ||
+            cc.getOrNull(SemanticsProperties.Role) != null ||
+            cc.contains(SemanticsProperties.EditableText) ||
+            cc.contains(SemanticsProperties.ProgressBarRangeInfo) ||
+            cc.contains(SemanticsActions.OnClick)
+        }
+
         var label = "Node $id"
         var hasExplicitLabel = false
         
@@ -516,6 +541,22 @@ internal fun traverseSemanticsNode(node: androidx.compose.ui.semantics.Semantics
                         suppressedNodes.add(child.id)
                     }
                 }
+            }
+        }
+
+        // Priority 5: Molecule Detection (Layouts with Background + SDK children)
+        if (!hasExplicitLabel && hasVisualIdentity && hasSdkChildren) {
+            hasExplicitLabel = true
+            
+            // Try to find a hint for the label from the first text child
+            val titleChildText = node.children.firstOrNull { it.config.contains(SemanticsProperties.Text) }
+                ?.config?.getOrNull(SemanticsProperties.Text)?.firstOrNull()?.toString()
+                
+            label = if (titleChildText != null) {
+                val cleaned = if (titleChildText.length > 12) titleChildText.take(12) + "..." else titleChildText
+                "$cleaned Container"
+            } else {
+                "Container"
             }
         }
 
