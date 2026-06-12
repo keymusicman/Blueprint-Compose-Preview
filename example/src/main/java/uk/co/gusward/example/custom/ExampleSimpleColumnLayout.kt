@@ -1,7 +1,6 @@
 package uk.co.gusward.example.custom
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -36,8 +35,10 @@ fun ExampleSimpleColumnBlueprintPreview() {
     BlueprintPreview {
         ExampleSimpleColumn(
             listOf(
-                { Box(modifier = Modifier.height(100.dp)) {} },
-                { Text("Passive Item 2", modifier = Modifier.fillMaxWidth().height(100.dp)) }
+                { Text("Passive Item 1", modifier = Modifier.fillMaxWidth().height(100.dp)) },
+                { Text("Passive Item 2", modifier = Modifier.fillMaxWidth().height(100.dp)) },
+                {  }, // Empty space, should not show on the list
+                { Text("Passive Item 3", modifier = Modifier.fillMaxWidth().height(100.dp)) }
             )
         )
     }
