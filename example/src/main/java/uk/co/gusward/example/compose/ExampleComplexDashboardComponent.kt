@@ -44,8 +44,14 @@ fun ExampleComplexDashboardComponent() {
                 Box(
                     modifier = Modifier
                         .size(48.dp)
-                        .background(Color(0xFFD1E4FF), CircleShape)
-                )
+                        .background(Color(0xFFD1E4FF), CircleShape),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        "A",
+                        fontSize = 30.sp
+                    )
+                }
                 Spacer(modifier = Modifier.width(16.dp))
                 Column {
                     Text(
