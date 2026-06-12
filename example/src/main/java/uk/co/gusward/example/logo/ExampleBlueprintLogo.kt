@@ -19,8 +19,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
-import uk.co.gusward.bluprint.preview.BlueprintPreview
-import uk.co.gusward.bluprint.preview.blueprintId
+import uk.co.gusward.blueprint.compose.preview.preview.BlueprintPreview
+import uk.co.gusward.blueprint.compose.preview.preview.blueprintId
 
 @Composable
 fun Block(w: Int, h: Int, modifier: Modifier = Modifier) {

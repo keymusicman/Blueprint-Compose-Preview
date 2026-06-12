@@ -10,7 +10,7 @@ group = "uk.co.gusward"
 version = "1.0.0"
 
 android {
-    namespace = "uk.co.gusward.blueprint.noop"
+    namespace = "uk.co.gusward.blueprint.compose.preview.noop"
     compileSdk = 35
 
     defaultConfig {

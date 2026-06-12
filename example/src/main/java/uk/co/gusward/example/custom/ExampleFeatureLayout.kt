@@ -20,7 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
-import uk.co.gusward.bluprint.preview.BlueprintPreview
+import uk.co.gusward.blueprint.compose.preview.preview.BlueprintPreview
 
 @Composable
 fun ExampleFeatureLayout(

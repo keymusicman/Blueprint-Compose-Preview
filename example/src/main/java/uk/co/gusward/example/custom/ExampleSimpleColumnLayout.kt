@@ -11,7 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import uk.co.gusward.bluprint.preview.BlueprintPreview
+import uk.co.gusward.blueprint.compose.preview.preview.BlueprintPreview
 
 @Composable
 fun ExampleSimpleColumn(
