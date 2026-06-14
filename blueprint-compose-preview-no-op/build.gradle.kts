@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "uk.co.gusward"
-version = "1.0.0"
+version = "1.0.1"
 
 android {
     namespace = "uk.co.gusward.blueprint.compose.preview.noop"
@@ -52,7 +52,7 @@ publishing {
         create<MavenPublication>("release") {
             groupId = "uk.co.gusward"
             artifactId = "blueprint-compose-preview-no-op"
-            version = "1.0.0"
+            version = "1.0.1"
 
             afterEvaluate {
                 from(components["release"])
