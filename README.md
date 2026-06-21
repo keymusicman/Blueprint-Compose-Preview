@@ -11,12 +11,12 @@ Blueprint Preview is a dev tool for Jetpack Compose that shows you a "blueprint"
 ```kotlin
 dependencies {
     debugImplementation("uk.co.gusward:blueprint-compose-preview:1.0.1")
-    // Optional
+    // Optional (unless blueprint is used in prod code)
     releaseImplementation("uk.co.gusward:blueprint-compose-preview-no-op:1.0.1")
 }
 ```
 
-The no-op release implementation is optional, it just stubs out the blueprintId modifier and BlueprintPreview to prevent logic landing in app builds.
+The no-op release implementation is only needed in the case that blueprintId is used in production code, it stubs out the blueprint API so the app builds with the tooling logic removed.
 
 ```kotlin
 @Preview
